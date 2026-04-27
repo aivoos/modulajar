@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2022"],
+    "moduleResolution": "bundler",
+    "types": ["bun"],
+    "paths": {
+      "@/*": ["./src/*"],
+      "@modulajar/shared": ["../../packages/shared/src"],
+      "@modulajar/db": ["../../packages/db/src"],
+      "@modulajar/agents": ["../../packages/agents/src"]
+    }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+}

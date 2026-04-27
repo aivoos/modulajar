@@ -1,0 +1,25 @@
+{
+  "name": "@modulajar/api",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "bun run src/index.ts",
+    "build": "bun build src/index.ts --outdir ./dist --target bun",
+    "start": "bun run src/index.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@elysiajs/cors": "^1.2.0",
+    "@modulajar/agents": "workspace:*",
+    "@modulajar/db": "workspace:*",
+    "@modulajar/shared": "workspace:*",
+    "@supabase/supabase-js": "^2.47.10",
+    "dotenv": "^16.4.5",
+    "elysia": "^1.2.0",
+    "elysia-rate-limit": "^4.6.0"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.13",
+    "typescript": "^5.7.2"
+  }
+}
