@@ -2,13 +2,12 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "lib": ["ES2022"],
-    "moduleResolution": "bundler",
+    "moduleResolution": "node",
     "types": ["bun"],
+    "baseUrl": "../../",
     "paths": {
-      "@/*": ["./src/*"],
-      "@modulajar/shared": ["../../packages/shared/src"],
-      "@modulajar/db": ["../../packages/db/src"],
-      "@modulajar/agents": ["../../packages/agents/src"]
+      "@modulajar/db": ["packages/db/src"],
+      "@modulajar/shared": ["packages/shared/src"]
     }
   },
   "include": ["src/**/*"],
