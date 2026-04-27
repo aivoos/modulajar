@@ -48,13 +48,15 @@ const { agentRoutes } = await import("./routes/agent");
 const { webhookRoutes } = await import("./routes/webhooks");
 const { moduleRoutes } = await import("./routes/modules");
 const { subscriptionRoutes } = await import("./routes/subscriptions");
+const { libraryRoutes } = await import("./routes/library");
 
 app
   .use(authRoutes)
   .use(agentRoutes)
   .use(webhookRoutes)
   .use(moduleRoutes)
-  .use(subscriptionRoutes);
+  .use(subscriptionRoutes)
+  .use(libraryRoutes);
 
 const PORT = parseInt(process.env["PORT"] ?? "3000", 10);
 const HOST = process.env["HOST"] ?? "0.0.0.0";
