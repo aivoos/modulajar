@@ -1,4 +1,5 @@
 "use client";
+export const dynamic = 'force-dynamic';
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase/client";
@@ -42,7 +43,6 @@ export default function NewModulePage() {
     );
   }
 
-  const isPro = plan === "guru_pro" || plan === "sekolah";
   const isFree = plan === "free";
   const freeLocked = isFree || quotaExhausted;
 

@@ -15,7 +15,7 @@ export default function GeneratingPage() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
   const [done, setDone] = useState(false);
-  const [failed, setFailed] = useState(false);
+  const [failed] = useState(false);
 
   useEffect(() => {
     // Simulate AI generation (Phase 2: real SSE implementation)

@@ -1,14 +1,9 @@
 "use client";
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
 import { SchemaRenderer } from "@/lib/schema-renderer/fields";
 import type { ModuleTemplateSchema, ModuleContent } from "@/lib/schema-renderer/types";
-
-const SECTION_ORDER = [
-  "identitas", "cp", "tp", "atp", "pemahaman", "pertanyaan",
-  "kegiatan", "asesmen", "refleksi", "lampiran",
-];
 
 interface Section {
   id: string;
@@ -43,8 +38,9 @@ function SidebarOutline({ sections, active, onClick }: {
   );
 }
 
-export default function ModuleEditorPage({ params }: { params: { id: string } }) {
+export default function ModuleEditorPage() {
   const router = useRouter();
+  const params = useParams<{ id: string }>();
   const [module, setModule] = useState<{
     id: string; title: string; subject: string; fase: string; status: string; content: ModuleContent;
   } | null>(null);

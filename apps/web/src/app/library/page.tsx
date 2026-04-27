@@ -1,4 +1,5 @@
 "use client";
+export const dynamic = 'force-dynamic';
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase/client";
 
@@ -9,7 +10,6 @@ export default function LibraryPage() {
     tags: string[];
   }>>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState("");
 
   useEffect(() => {
     async function load() {

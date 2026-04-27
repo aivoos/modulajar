@@ -1,4 +1,5 @@
 "use client";
+export const dynamic = 'force-dynamic';
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase/client";
@@ -27,9 +28,6 @@ export default function SettingsPage() {
     load();
   }, []);
 
-  const PLAN_NAMES: Record<string, string> = {
-    free: "Free", guru_pro: "Guru Pro", sekolah: "Plan Sekolah",
-  };
   const PLAN_PRICES: Record<string, string> = {
     free: "Gratis", guru_pro: "Rp 29.000/bulan", sekolah: "Rp 499.000/bulan",
   };
