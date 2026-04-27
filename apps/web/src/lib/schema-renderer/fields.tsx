@@ -1,4 +1,5 @@
 // SchemaRenderer — renders ModuleTemplate.schema JSONB → React form
+import React from "react";
 import { type SchemaField, type SchemaSection, type ModuleContent } from "./types";
 
 interface Props {
