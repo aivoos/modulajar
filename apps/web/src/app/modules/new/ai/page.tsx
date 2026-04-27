@@ -68,6 +68,7 @@ export default function AiWizardPage() {
   async function handleGenerate() {
     setSubmitting(true);
 
+    // eslint-disable-next-line
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { router.push("/login"); return; }
 

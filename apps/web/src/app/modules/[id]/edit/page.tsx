@@ -5,11 +5,6 @@ import { supabase } from "@/lib/supabase/client";
 import { SchemaRenderer } from "@/lib/schema-renderer/fields";
 import type { ModuleTemplateSchema, ModuleContent } from "@/lib/schema-renderer/types";
 
-const SECTION_ORDER = [
-  "identitas", "cp", "tp", "atp", "pemahaman", "pertanyaan",
-  "kegiatan", "asesmen", "refleksi", "lampiran",
-];
-
 interface Section {
   id: string;
   title: string;
