@@ -1,6 +1,6 @@
 // Fork a module — copy to current user's account
 import { Elysia } from "elysia";
-import { createAdminClient } from "../../packages/db/src/client";
+import { createAdminClient } from "@modulajar/db";
 
 export const libraryRoutes = new Elysia({ prefix: "/api/library" })
   .get("/curated", async ({ request, set }) => {

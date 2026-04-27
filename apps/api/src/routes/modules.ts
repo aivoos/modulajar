@@ -1,6 +1,7 @@
 // Module routes — /api/modules/*
 import { Elysia } from "elysia";
 import { createAdminClient } from "@modulajar/db";
+import { CreateModuleBody, UpdateModuleBody } from "../lib/schemas";
 
 function getUserId(request: Request): string | null {
   return request.headers.get("X-User-ID");
@@ -36,22 +37,25 @@ export const moduleRoutes = new Elysia({ prefix: "/api/modules" })
     if (!userId) { set.status = 401; return { error: "unauthorized" }; }
 
     const supabase = createAdminClient();
-    const body = await request.json() as Record<string, unknown>;
+    const rawBody = await request.json();
+    const parsed = CreateModuleBody.safeParse(rawBody);
+    if (!parsed.success) { set.status = 400; return { error: "validation_error", details: parsed.error.flatten() }; }
+    const body = parsed.data;
 
     const { data: user } = await supabase.from("users").select("school_id").eq("id", userId).single();
 
     const { data, error } = await supabase.from("modules").insert({
       user_id: userId,
       school_id: user?.school_id ?? null,
-      title: (body.title as string) ?? "Modul Baru",
-      subject: (body.subject as string) ?? "Bahasa Indonesia",
-      fase: (body.fase as string) ?? "C",
-      kelas: (body.kelas as number[]) ?? [10],
-      duration_weeks: (body.duration_weeks as number) ?? 4,
-      learning_style: (body.learning_style as string) ?? "campuran",
-      curriculum_version_id: body.curriculum_version_id as string,
-      module_template_id: body.module_template_id as string,
-      content: (body.content as Record<string, unknown>) ?? {},
+      title: body.title ?? "Modul Baru",
+      subject: body.subject ?? "Bahasa Indonesia",
+      fase: body.fase ?? "C",
+      kelas: body.kelas ?? [10],
+      duration_weeks: body.duration_weeks ?? 4,
+      learning_style: body.learning_style ?? "campuran",
+      curriculum_version_id: body.curriculum_version_id,
+      module_template_id: body.module_template_id,
+      content: body.content ?? {},
       status: "draft",
     }).select().single();
 
@@ -80,12 +84,10 @@ export const moduleRoutes = new Elysia({ prefix: "/api/modules" })
     if (existing.user_id !== userId) { set.status = 403; return { error: "forbidden" }; }
     if (existing.status !== "draft") { set.status = 400; return { error: "cannot_edit_published" }; }
 
-    const body = await request.json() as Record<string, unknown>;
-    const autosaveFields = ["title", "subject", "fase", "kelas", "duration_weeks", "learning_style", "content", "tags"];
-    const updates: Record<string, unknown> = {};
-    for (const field of autosaveFields) {
-      if (field in body) updates[field] = body[field as keyof typeof body];
-    }
+    const rawBody = await request.json();
+    const parsed = UpdateModuleBody.safeParse(rawBody);
+    if (!parsed.success) { set.status = 400; return { error: "validation_error", details: parsed.error.flatten() }; }
+    const updates = parsed.data;
 
     const { data, error } = await supabase.from("modules").update(updates).eq("id", params["id"]).select().single();
     if (error) { set.status = 500; return { error: "update_failed" }; }

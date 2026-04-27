@@ -4,10 +4,10 @@
     "lib": ["ES2022"],
     "moduleResolution": "node",
     "types": ["bun"],
-    "baseUrl": "../../",
+    "baseUrl": ".",
     "paths": {
-      "@modulajar/db": ["packages/db/src"],
-      "@modulajar/shared": ["packages/shared/src"]
+      "@modulajar/db": ["./node_modules/@modulajar/db/src"],
+      "@modulajar/shared": ["./node_modules/@modulajar/shared/src"]
     }
   },
   "include": ["src/**/*"],
