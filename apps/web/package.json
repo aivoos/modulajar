@@ -10,8 +10,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@modulajar/shared": "workspace:*",
     "@modulajar/db": "workspace:*",
+    "@modulajar/shared": "workspace:*",
     "@supabase/supabase-js": "^2.47.10",
     "next": "^15.1.0",
     "react": "^19.0.0",
@@ -21,6 +21,9 @@
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "autoprefixer": "^10.5.0",
+    "postcss": "^8.5.12",
+    "tailwindcss": "^4.2.4",
     "typescript": "^5.7.2"
   }
 }
