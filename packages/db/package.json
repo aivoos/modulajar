@@ -11,7 +11,8 @@
     "./migrations": "./src/migrations/"
   },
   "scripts": {
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:staging": "bun run src/regression.test.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.47.10"
