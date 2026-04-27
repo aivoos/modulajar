@@ -1,12 +1,13 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
 import { SchemaRenderer } from "@/lib/schema-renderer/fields";
 import type { ModuleTemplateSchema, ModuleContent } from "@/lib/schema-renderer/types";
 
-export default function ModulePreviewPage({ params }: { params: { id: string } }) {
+export default function ModulePreviewPage() {
   const router = useRouter();
+  const params = useParams<{ id: string }>();
   const [module, setModule] = useState<{
     id: string; title: string; subject: string; fase: string; kelas: number[]; status: string;
     created_at: string; published_at: string | null; content: ModuleContent; user_id: string;
