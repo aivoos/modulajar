@@ -42,7 +42,6 @@ export default function NewModulePage() {
     );
   }
 
-  const isPro = plan === "guru_pro" || plan === "sekolah";
   const isFree = plan === "free";
   const freeLocked = isFree || quotaExhausted;
 

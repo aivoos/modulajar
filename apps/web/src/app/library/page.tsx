@@ -9,7 +9,6 @@ export default function LibraryPage() {
     tags: string[];
   }>>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState("");
 
   useEffect(() => {
     async function load() {

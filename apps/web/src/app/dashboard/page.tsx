@@ -129,7 +129,6 @@ export default function DashboardPage() {
   const quotaPct = limit > 0 ? Math.min((used / limit) * 100, 100) : 0;
   const quotaLeft = Math.max(0, limit - used);
 
-  const isPastDue = sub?.status === "past_due";
   const graceMs = sub?.grace_period_end ? new Date(sub.grace_period_end).getTime() - Date.now() : 0;
   const graceDaysLeft: number | null = graceMs > 0 ? Math.ceil(graceMs / 86400000) : null;
 
