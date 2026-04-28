@@ -20,9 +20,9 @@ export const metadata: Metadata = {
     "merdeka mengajar",
     "CP TP ATP",
   ],
-  authors: [{ name: "PT Modulajar Indonesia" }],
+  authors: [{ name: "CV. Artesis Sinar Endah Perdana" }],
   creator: "Modulajar",
-  publisher: "PT Modulajar Indonesia",
+  publisher: "CV. Artesis Sinar Endah Perdana",
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_SITE_URL ?? "https://modulajar.app"
   ),
@@ -32,12 +32,14 @@ export const metadata: Metadata = {
     siteName: "Modulajar",
     title: "Modulajar — Buat Modul Ajar Kurikulum Merdeka dalam menit",
     description: "Buat modul ajar Kurikulum Merdeka dengan bantuan AI. Gratis untuk guru Indonesia.",
+    images: [{ url: "/api/og", width: 1200, height: 630 }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Modulajar — Buat Modul Ajar Kurikulum Merdeka dalam menit",
     description: "Buat modul ajar Kurikulum Merdeka dengan bantuan AI. Gratis untuk guru Indonesia.",
     creator: "@modulajar",
+    images: ["/api/og"],
   },
   robots: {
     index: true,

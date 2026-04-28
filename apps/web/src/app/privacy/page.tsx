@@ -21,7 +21,7 @@ export default function PrivacyPage() {
 
           <section>
             <h2 className="text-lg font-semibold text-gray-900">1. Pendahuluan</h2>
-            <p>PT Modulajar Indonesia ("Modulajar", "kami", "milik kami") berkomitmen untuk melindungi privasi Anda. Kebijakan Privasi ini menjelaskan bagaimana kami mengumpulkan, menggunakan, mengungkapkan, dan melindungi informasi pribadi Anda ketika Anda menggunakan layanan kami.</p>
+            <p>CV. Artesis Sinar Endah Perdana ("Modulajar", "kami", "milik kami") berkomitmen untuk melindungi privasi Anda. Kebijakan Privasi ini menjelaskan bagaimana kami mengumpulkan, menggunakan, mengungkapkan, dan melindungi informasi pribadi Anda ketika Anda menggunakan layanan kami.</p>
             <p>Kebijakan ini dibuat sesuai dengan Undang-Undang Perlindungan Data Pribadi (UU PDP) Republik Indonesia No. 27 Tahun 2022.</p>
           </section>
 
@@ -90,18 +90,76 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-gray-900">9. Transfer Data Internasional</h2>
-            <p>Beberapa data (seperti prompts ke AI) diproses oleh server di luar Indonesia (OpenAI, Anthropic). Kami memastikan bahwa transfer tersebut dilakukan dengan standar keamanan yang memadai dan sesuai dengan ketentuan UU PDP tentang transfer data lintas batas.</p>
+            <h2 className="text-lg font-semibold text-gray-900">9. Lokasi Penyimpanan & Transfer Data Internasional</h2>
+            <p>Data Anda disimpan dan diproses di beberapa lokasi berikut:</p>
+            <div className="space-y-3 mt-3">
+              <div className="bg-gray-50 rounded-xl p-4">
+                <p className="font-semibold text-gray-900 text-sm mb-1">Supabase (Database &amp; Storage)</p>
+                <p className="text-gray-600 text-xs leading-relaxed">
+                  Semua data aplikasi (modul ajar, informasi akun, data siswa) disimpan di <strong>Supabase</strong> yang menggunakan infrastruktur <strong>AWS Singapore (ap-southeast-1)</strong>. Data dalam keadaan terenkripsi saat diam dan saat transmisi (TLS/SSL).
+                </p>
+              </div>
+              <div className="bg-gray-50 rounded-xl p-4">
+                <p className="font-semibold text-gray-900 text-sm mb-1">Anthropic (Claude API)</p>
+                <p className="text-gray-600 text-xs leading-relaxed">
+                  Ketika Anda menggunakan fitur generate modul, <strong>prompt dan konteks modul</strong> dikirim ke API Anthropic untuk diproses oleh model Claude. Prompt ini <strong>tidak disimpan</strong> oleh Modulajar setelah diproses. Anthropicmemproses data ini sesuai dengan <a href="https://www.anthropic.com/api-policy" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline">API Policy Anthropic</a>. Data Anda tidak digunakan untuk melatih model AI.
+                </p>
+              </div>
+              <div className="bg-gray-50 rounded-xl p-4">
+                <p className="font-semibold text-gray-900 text-sm mb-1">OpenAI (GPT API)</p>
+                <p className="text-gray-600 text-xs leading-relaxed">
+                  Beberapa fitur AI menggunakan <strong>OpenAI API</strong>. Prompt diproses oleh server OpenAI di <strong>Amerika Serikat</strong>. Prompt <strong>tidak disimpan</strong> oleh Modulajar dan tidak digunakan untuk melatih model OpenAI. Lihat <a href="https://openai.com/policies/row-processing-agreement" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline">OpenAI API Data Privacy</a>.
+                </p>
+              </div>
+              <div className="bg-gray-50 rounded-xl p-4">
+                <p className="font-semibold text-gray-900 text-sm mb-1">Xendit (Payment Gateway)</p>
+                <p className="text-gray-600 text-xs leading-relaxed">
+                  Informasi pembayaran (bukan nomor kartu) diproses oleh <strong>Xendit</strong> yang berlokasi di Indonesia. Xendit adalah provider payment gateway berlisensi Bank Indonesia.
+                </p>
+              </div>
+            </div>
+            <p className="mt-4 text-xs text-gray-500">Transfer data lintas batas dilakukan sesuai dengan Pasal 51 UU PDP dengan standard contractual clauses dan perjanjian pemrosesan data (DPA) dengan masing-masing vendor.</p>
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-gray-900">10. Perubahan Kebijakan</h2>
+            <h2 className="text-lg font-semibold text-gray-900">10. Periode Retensi Data</h2>
+            <p>Kami menyimpan data Anda dalam periode berikut:</p>
+            <table className="w-full text-xs border border-gray-200 rounded-xl overflow-hidden mt-3">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-4 py-2.5 text-left font-semibold text-gray-700">Jenis Data</th>
+                  <th className="px-4 py-2.5 text-left font-semibold text-gray-700">Periode Retensi</th>
+                  <th className="px-4 py-2.5 text-left font-semibold text-gray-700">Dasar Hapus</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {[
+                  ["Akun & profil pengguna", "Selama akun aktif + 30 hari setelah dihapus", "Permintaan pengguna / admin"],
+                  ["Modul ajar & konten", "Permanen (tersimpan untuk akses pengguna)", "Penghapusan akun oleh pengguna"],
+                  ["Data siswa (nama, NIS)", "Selama teaching class aktif", "Penghapusan teaching class"],
+                  ["Riwayat pembayaran", "5 tahun (kewajiban pajak)", "UU Perpajakan Indonesia"],
+                  ["Log analitik (Posthog)", "90 hari", "Kebijakan retensi Posthog EU"],
+                  ["Log server (error)", "30 hari", "Kebijakan internal keamanan"],
+                  ["Cookie", "Sesuai jenis (session - 1 tahun)", "Kebijakan Cookie"],
+                ].map(([dataType, period, basis]) => (
+                  <tr key={dataType} className="hover:bg-gray-50">
+                    <td className="px-4 py-2.5 text-gray-700">{dataType}</td>
+                    <td className="px-4 py-2.5 text-gray-600">{period}</td>
+                    <td className="px-4 py-2.5 text-gray-500">{basis}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
+
+          <section>
+            <h2 className="text-lg font-semibold text-gray-900">11. Perubahan Kebijakan</h2>
             <p>Kami dapat memperbarui Kebijakan Privasi ini sewaktu-waktu. Perubahan signifikan akan diumumkan melalui email atau notifikasi di platform. Penggunaan berkelanjutan setelah perubahan dianggap sebagai persetujuan.</p>
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-gray-900">11. Kontak</h2>
-            <p><strong>PT Modulajar Indonesia</strong><br />
+            <h2 className="text-lg font-semibold text-gray-900">12. Kontak</h2>
+            <p><strong>CV. Artesis Sinar Endah Perdana</strong><br />
             Email: hello@modulajar.app</p>
           </section>
         </div>

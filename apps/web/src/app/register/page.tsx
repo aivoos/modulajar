@@ -12,9 +12,14 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [tosAccepted, setTosAccepted] = useState(false);
 
   async function handleEmailRegister(e: React.FormEvent) {
     e.preventDefault();
+    if (!tosAccepted) {
+      setError("Anda harus menyetujui Syarat & Ketentuan serta Kebijakan Privasi untuk mendaftar.");
+      return;
+    }
     setLoading(true);
     setError(null);
 
@@ -144,17 +149,31 @@ export default function RegisterPage() {
 
           <button
             type="submit"
-            disabled={loading}
-            className="w-full py-2.5 bg-indigo-600 text-white rounded-xl font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50"
+            disabled={loading || !tosAccepted}
+            className="w-full py-2.5 bg-indigo-600 text-white rounded-xl font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? "Memproses..." : "Daftar"}
           </button>
 
-          <p className="text-xs text-gray-400 text-center">
-            Dengan mendaftar, Anda menyetujui{" "}
-            <a href="/terms" className="underline">Syarat & Ketentuan</a> dan{" "}
-            <a href="/privacy" className="underline">Kebijakan Privasi</a>.
-          </p>
+          {/* ToS checkbox */}
+          <div className="flex items-start gap-2 text-xs text-gray-500">
+            <input
+              type="checkbox"
+              id="tos"
+              checked={tosAccepted}
+              onChange={(e) => {
+                setTosAccepted(e.target.checked);
+                if (error?.includes("Syarat & Ketentuan")) setError(null);
+              }}
+              className="mt-0.5 w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-2 focus:ring-indigo-500"
+            />
+            <label htmlFor="tos" className="leading-relaxed">
+              Saya menyetujui{" "}
+              <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline">Syarat & Ketentuan</a>,{" "}
+              <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline">Kebijakan Privasi</a>, dan{" "}
+              <a href="/cookies" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline">Kebijakan Cookie</a>.
+            </label>
+          </div>
         </form>
 
         <p className="text-center text-sm text-gray-500 mt-6">

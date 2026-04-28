@@ -82,7 +82,7 @@ export default function TermsPage() {
 
           <section>
             <h2 className="text-lg font-semibold text-gray-900">11. Informasi Perusahaan</h2>
-            <p><strong>PT Modulajar Indonesia</strong><br />
+            <p><strong>CV. Artesis Sinar Endah Perdana</strong><br />
             Alamat: Indonesia<br />
             Email: hello@modulajar.app</p>
           </section>

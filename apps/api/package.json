@@ -13,12 +13,15 @@
     "@modulajar/agents": "workspace:*",
     "@modulajar/db": "workspace:*",
     "@modulajar/shared": "workspace:*",
+    "@react-pdf/renderer": "^4.5.1",
     "@sparticuz/chromium": "^148.0.0",
     "@supabase/supabase-js": "^2.47.10",
     "dotenv": "^16.4.5",
     "elysia": "^1.2.0",
     "elysia-rate-limit": "^4.6.0",
     "puppeteer-core": "^24.42.0",
+    "resend": "^6.12.2",
+    "xendit-node": "^7.0.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {

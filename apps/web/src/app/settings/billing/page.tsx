@@ -329,6 +329,17 @@ function BillingContent() {
             />
           ))}
         </div>
+
+        {/* Auto-renewal disclosure */}
+        <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-xl">
+          <div className="flex items-start gap-2">
+            <span className="text-amber-500 mt-0.5">ℹ️</span>
+            <div className="text-xs text-amber-700 leading-relaxed">
+              <strong>Perpanjangan otomatis:</strong> Semua paket berbayar diperpanjang secara otomatis di akhir periode. Anda dapat membatalkan kapan saja melalui menu Pengaturan → Langganan → Batalkan sebelum periode berakhir — akses tetap aktif sampai akhir periode yang sudah dibayar.{" "}
+              <a href="/refund" className="underline font-medium">Kebijakan refund</a>.
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Payment history */}

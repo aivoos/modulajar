@@ -78,7 +78,7 @@ export default function RefundPage() {
 
           <section>
             <h2 className="text-lg font-semibold text-gray-900">7. Kontak</h2>
-            <p><strong>PT Modulajar Indonesia</strong><br />
+            <p><strong>CV. Artesis Sinar Endah Perdana</strong><br />
             Email: hello@modulajar.app</p>
           </section>
         </div>

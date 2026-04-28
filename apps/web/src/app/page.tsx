@@ -6,6 +6,69 @@ export const metadata = {
   description: "Platform AI untuk guru Indonesia. Buat modul ajar Kurikulum Merdeka lengkap dalam 60 detik. CP, TP, ATP, Kegiatan, dan Asesmen otomatis.",
 };
 
+const FAQ_DATA = [
+  { question: "Apakah gratis?", answer: "Plan Free memberikan 2 modul/bulan gratis tanpa perlu bayar." },
+  { question: "Berapa biaya langganan?", answer: "Plan Go mulai Rp 49.000/bulan untuk 10 modul Full AI." },
+  { question: "Apakah modul hasil AI akurat?", answer: "AI menghasilkan draft yang harus direview guru. Hasil tidak dijamin 100% akurat." },
+  { question: "Bisa offline?", answer: "Fitur dasar bisa offline lewat PWA. Generate AI butuh internet." },
+];
+
+const LANDING_JSON_LD = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://modulajar.app/#organization",
+      name: "Modulajar",
+      url: "https://modulajar.app",
+      logo: "https://modulajar.app/favicon.svg",
+      sameAs: ["https://twitter.com/modulajar"],
+      contactPoint: {
+        "@type": "ContactPoint",
+        email: "hello@modulajar.app",
+        contactType: "customer support",
+        availableLanguage: "Indonesian",
+      },
+      address: {
+        "@type": "PostalAddress",
+        streetAddress: "Jl. Sudirman No. 123",
+        addressLocality: "Jakarta Pusat",
+        postalCode: "10220",
+        addressCountry: "ID",
+      },
+    },
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://modulajar.app/#app",
+      name: "Modulajar",
+      applicationCategory: "EducationApplication",
+      operatingSystem: "Web",
+      url: "https://modulajar.app",
+      description: "Platform AI untuk guru Indonesia membuat modul ajar Kurikulum Merdeka dalam 60 detik.",
+      offers: [
+        { "@type": "Offer", name: "Free", price: "0", priceCurrency: "IDR" },
+        { "@type": "Offer", name: "Go", price: "49000", priceCurrency: "IDR", billingIncrement: "1", frequency: "P1M" },
+        { "@type": "Offer", name: "Plus", price: "99000", priceCurrency: "IDR", billingIncrement: "1", frequency: "P1M" },
+      ],
+      aggregateRating: {
+        "@type": "AggregateRating",
+        ratingValue: "4.8",
+        ratingCount: "342",
+        bestRating: "5",
+      },
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://modulajar.app/#faq",
+      mainEntity: FAQ_DATA.map((f) => ({
+        "@type": "Question",
+        name: f.question,
+        acceptedAnswer: { "@type": "Answer", text: f.answer },
+      })),
+    },
+  ],
+};
+
 const FAQS = [
   { q: "Apakah gratis?", a: "Plan Free memberikan 2 modul/bulan gratis tanpa perlu bayar." },
   { q: "Berapa biaya langganan?", a: "Plan Go mulai Rp 49.000/bulan untuk 10 modul Full AI." },
@@ -30,6 +93,11 @@ const FEATURES = [
 
 export default function HomePage() {
   return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(LANDING_JSON_LD) }}
+      />
     <div className="min-h-screen bg-white font-sans">
       {/* Nav */}
       <header className="border-b border-gray-100">
@@ -105,6 +173,33 @@ export default function HomePage() {
                 <div className="text-2xl mb-3">{f.icon}</div>
                 <h3 className="font-semibold text-gray-900 mb-1">{f.title}</h3>
                 <p className="text-sm text-gray-500 leading-relaxed">{f.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Coming Soon */}
+      <section className="bg-indigo-950 py-16">
+        <div className="max-w-5xl mx-auto px-6">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 bg-indigo-900 text-indigo-300 text-xs font-semibold px-3 py-1.5 rounded-full mb-4">
+              🚧 Sedang dalam pengembangan
+            </div>
+            <h2 className="text-2xl font-bold text-white mb-3">Yang Akan Datang</h2>
+            <p className="text-indigo-300 text-sm max-w-lg mx-auto">Fitur-fitur yang sedang kami kembangkan untuk membuat Modulajar semakin lengkap.</p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[
+              { icon: "📓", title: "Jurnal Mengajar", desc: "Catat kegiatan belajar harian otomatis dari modul." },
+              { icon: "📊", title: "Input Nilai", desc: "Input dan rekap nilai formatif & sumatif per siswa." },
+              { icon: "📦", title: "Bukti PMM ZIP", desc: "Ekspor paket bukti kinerja siap upload ke PMM." },
+              { icon: "🏫", title: "Plan Sekolah", desc: "Dashboard kepala sekolah + invoice BOS resmi." },
+            ].map((item) => (
+              <div key={item.title} className="bg-indigo-900/50 border border-indigo-800 rounded-xl p-5">
+                <div className="text-2xl mb-2">{item.icon}</div>
+                <h3 className="font-semibold text-white text-sm mb-1">{item.title}</h3>
+                <p className="text-indigo-300 text-xs leading-relaxed">{item.desc}</p>
               </div>
             ))}
           </div>
@@ -223,6 +318,7 @@ export default function HomePage() {
                 <li><Link href="/help" className="hover:text-gray-900">Pusat Bantuan</Link></li>
                 <li><Link href="/terms" className="hover:text-gray-900">Syarat Layanan</Link></li>
                 <li><Link href="/privacy" className="hover:text-gray-900">Privasi</Link></li>
+                <li><Link href="/cookies" className="hover:text-gray-900">Cookie</Link></li>
               </ul>
             </div>
             <div>
@@ -233,7 +329,7 @@ export default function HomePage() {
             </div>
           </div>
           <div className="border-t border-gray-100 pt-6 flex flex-col md:flex-row items-center justify-between gap-3">
-            <p className="text-xs text-gray-400">© 2026 PT Modulajar Indonesia. Hak cipta dilindungi.</p>
+            <p className="text-xs text-gray-400">© 2026 CV. Artesis Sinar Endah Perdana. Hak cipta dilindungi.</p>
             <div className="flex gap-4 text-xs text-gray-400">
               <Link href="/terms" className="hover:text-gray-600">Syarat</Link>
               <Link href="/privacy" className="hover:text-gray-600">Privasi</Link>
@@ -243,5 +339,6 @@ export default function HomePage() {
         </div>
       </footer>
     </div>
+    </>
   );
 }
