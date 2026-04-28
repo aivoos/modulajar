@@ -2,7 +2,21 @@
 -- Ref: modulajar-master-v3.jsx — Migration 012
 BEGIN;
 
--- Curriculum Versions
+-- ── Fix academic_years RLS: allow users without school to access personal years ──
+DROP POLICY IF EXISTS academic_years_all ON academic_years;
+
+CREATE POLICY academic_years_all ON academic_years FOR ALL
+  USING (
+    -- Users with a school: only see/create their school's academic years
+    (EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND school_id IS NOT NULL)
+     AND school_id = (SELECT school_id FROM users WHERE id = auth.uid()))
+    OR
+    -- Users without a school (NULL): allow personal academic years
+    (EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND school_id IS NULL)
+     AND school_id IS NULL)
+  );
+
+-- ── Curriculum Versions ──────────────────────────────────────────
 INSERT INTO curriculum_versions (name, code, year, status) VALUES
   ('Kurikulum 2013', 'K13', 2013, 'deprecated'),
   ('Kurikulum Merdeka 2022', 'MERDEKA_2022', 2022, 'active');
@@ -11,7 +25,7 @@ INSERT INTO curriculum_versions (name, code, year, status) VALUES
 INSERT INTO app_config (key, value, description) VALUES
   ('ai_quota_go',       '{"value": 10}',    'AI quota per bulan untuk Go tier'),
   ('ai_quota_plus',     '{"value": 20}',    'AI quota per bulan untuk Plus tier'),
-  ('ai_quota_sekolah',   '{"value": 25}',   'AI quota per guru/bulan untuk Sekolah tier'),
+  ('ai_quota_sekolah', '{"value": 30}',   'AI quota per guru/bulan untuk Sekolah tier'),
   ('topup_price_idr',   '{"value": 10000}', 'Harga top-up AI credits'),
   ('topup_credits',     '{"value": 3}',      'Jumlah credits per top-up'),
   ('max_modules_free',  '{"value": 2}',      'Maks modul per bulan untuk Free'),
