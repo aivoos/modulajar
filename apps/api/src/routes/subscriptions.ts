@@ -38,5 +38,7 @@ export const subscriptionRoutes = new Elysia({ prefix: "/api/subscriptions" })
     const plan = body["plan"] as string;
     if (!plan || !["go", "plus", "sekolah"].includes(plan)) { set.status = 400; return { error: "invalid_plan" }; }
 
-    return { status: "placeholder", message: "Xendit checkout in Phase 4", plan };
+    // Redirect to billing checkout
+    const billingCycle = (body["billing_cycle"] as string) ?? "monthly";
+    return { redirect: "/settings/billing", plan, billing_cycle: billingCycle };
   });
