@@ -1,27 +1,27 @@
-# Build from monorepo root so workspace:* deps resolve
-# Railway will use this Dockerfile for @modulajar/api
-FROM node:20-alpine
+# Railway deployment for @modulajar/api
+# bun image handles pnpm via corepack automatically
+FROM oven/bun:1-alpine
 WORKDIR /app
 
-# Corepack enables pnpm via packageManager field
-RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
+# Corepack activates pnpm from packageManager field
+RUN corepack enable
 
-# Copy monorepo config
+# Copy monorepo structure
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY packages ./packages
-COPY apps/api/package.json ./apps/api/
-
-# Install all workspace deps (resolves workspace:*)
-RUN pnpm install --frozen-lockfile
-
-# Copy API source
-COPY apps/api/src ./apps/api/src
-COPY apps/api/tsconfig.json ./apps/api/
+COPY apps/api ./apps/api
 COPY tsconfig.base.json ./
 
-# Build API with pnpm (monorepo-aware)
+# Install workspace deps
+RUN pnpm install --frozen-lockfile
+
+# Build API
 RUN pnpm --filter @modulajar/api run build
 
+# Railway injects env vars automatically
+ENV NODE_ENV=production
 EXPOSE 3000
+
+# Run with bun directly
 WORKDIR /app/apps/api
-CMD ["node", "dist/index.js"]
+CMD ["bun", "src/index.ts"]
