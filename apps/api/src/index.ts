@@ -50,6 +50,7 @@ const { moduleRoutes } = await import("./routes/modules");
 const { subscriptionRoutes } = await import("./routes/subscriptions");
 const { libraryRoutes } = await import("./routes/library");
 const { sseRoutes } = await import("./routes/sse");
+const { pdfRoutes } = await import("./routes/pdf");
 
 app
   .use(authRoutes)
@@ -58,7 +59,8 @@ app
   .use(webhookRoutes)
   .use(moduleRoutes)
   .use(subscriptionRoutes)
-  .use(libraryRoutes);
+  .use(libraryRoutes)
+  .use(pdfRoutes);
 
 const PORT = parseInt(process.env["PORT"] ?? "3000", 10);
 const HOST = process.env["HOST"] ?? "0.0.0.0";
