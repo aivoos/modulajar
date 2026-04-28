@@ -10,12 +10,17 @@ export default function SettingsPage() {
     ai_quota_limit: number; grace_days_remaining: number | null;
   } | null>(null);
   const [user, setUser] = useState<{ full_name: string; email: string } | null>(null);
+  const [fullName, setFullName] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [saveMsg, setSaveMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   useEffect(() => {
     async function load() {
       const { data: { user: authUser } } = await supabase.auth.getUser();
       if (!authUser) return;
-      setUser({ full_name: authUser.user_metadata?.full_name ?? "", email: authUser.email ?? "" });
+      const name = (authUser.user_metadata?.full_name as string | undefined) ?? "";
+      setUser({ full_name: name, email: authUser.email ?? "" });
+      setFullName(name);
 
       const { data } = await supabase
         .from("subscriptions")
@@ -28,8 +33,46 @@ export default function SettingsPage() {
     load();
   }, []);
 
+  async function handleSaveProfile(e: React.FormEvent) {
+    e.preventDefault();
+    setSaving(true);
+    setSaveMsg(null);
+
+    const { data: { user: authUser } } = await supabase.auth.getUser();
+    if (!authUser) {
+      setSaveMsg({ type: "error", text: "Tidak terautentikasi" });
+      setSaving(false);
+      return;
+    }
+
+    // Update auth metadata
+    const { error: authError } = await supabase.auth.updateUser({
+      data: { full_name: fullName },
+    });
+
+    if (authError) {
+      setSaveMsg({ type: "error", text: authError.message });
+      setSaving(false);
+      return;
+    }
+
+    // Update users table profile
+    const { error: profileError } = await supabase
+      .from("users")
+      .update({ full_name: fullName })
+      .eq("id", authUser.id);
+
+    if (profileError) {
+      setSaveMsg({ type: "error", text: profileError.message });
+    } else {
+      setSaveMsg({ type: "success", text: "Profil berhasil disimpan!" });
+      setUser({ ...user!, full_name: fullName });
+    }
+    setSaving(false);
+  }
+
   const PLAN_PRICES: Record<string, string> = {
-    free: "Gratis", guru_pro: "Rp 29.000/bulan", sekolah: "Rp 499.000/bulan",
+    free: "Gratis", go: "Rp 49.000/bulan", plus: "Rp 99.000/bulan", sekolah: "Rp 79.000/guru/bulan (min 6 guru)",
   };
 
   const quotaPct = sub
@@ -78,7 +121,7 @@ export default function SettingsPage() {
 
         {sub?.plan === "free" && (
           <div className="mb-4 p-3 bg-indigo-50 rounded-lg text-sm text-indigo-700">
-            Upgrade ke <b>Guru Pro</b> untuk akses Full AI + download PDF tanpa watermark.
+            Upgrade ke <b>Go</b> untuk akses Full AI + download PDF tanpa watermark.
           </div>
         )}
 
@@ -93,12 +136,13 @@ export default function SettingsPage() {
       {/* Profile */}
       <div className="bg-white rounded-xl border border-gray-200 p-5">
         <h2 className="font-semibold text-gray-900 mb-4">Profil</h2>
-        <div className="space-y-3">
+        <form onSubmit={handleSaveProfile} className="space-y-3">
           <div>
             <label className="block text-xs text-gray-500 mb-1">Nama</label>
             <input
               type="text"
-              defaultValue={user?.full_name ?? ""}
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
@@ -111,10 +155,15 @@ export default function SettingsPage() {
               className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50 text-gray-400"
             />
           </div>
-          <button className="px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg font-medium hover:bg-indigo-700">
-            Simpan Perubahan
+          {saveMsg && (
+            <div className={`text-sm px-3 py-2 rounded-lg ${saveMsg.type === "success" ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}>
+              {saveMsg.text}
+            </div>
+          )}
+          <button type="submit" disabled={saving} className="px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg font-medium hover:bg-indigo-700 disabled:opacity-50">
+            {saving ? "Menyimpan..." : "Simpan Perubahan"}
           </button>
-        </div>
+        </form>
       </div>
     </div>
   );

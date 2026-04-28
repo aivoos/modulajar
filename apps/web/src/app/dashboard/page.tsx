@@ -3,10 +3,12 @@ export const dynamic = 'force-dynamic';
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase/client";
+import { useRouter } from "next/navigation";
 
 const PLAN_LIMITS: Record<string, { full_ai_per_month: number }> = {
-  guru_pro: { full_ai_per_month: 10 },
-  sekolah: { full_ai_per_month: Infinity },
+  go: { full_ai_per_month: 10 },
+  plus: { full_ai_per_month: 20 },
+  sekolah: { full_ai_per_month: 25 },
 };
 
 interface DashboardStats {
@@ -50,6 +52,7 @@ export default function DashboardPage() {
   const [recentModules, setRecentModules] = useState<Module[]>([]);
   const [userName, setUserName] = useState("");
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   const load = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -124,7 +127,7 @@ export default function DashboardPage() {
   const firstName = userName.split(" ")[0] ?? "Guru";
 
   const isFree = sub?.plan === "free";
-  const isPro = sub?.plan === "guru_pro" || sub?.plan === "sekolah";
+  const isGo = sub?.plan === "go" || sub?.plan === "plus" || sub?.plan === "sekolah";
   const limit = isFree ? 0 : (PLAN_LIMITS[sub?.plan ?? ""]?.full_ai_per_month ?? 0);
   const used = sub?.ai_quota_used ?? 0;
   const quotaPct = limit > 0 ? Math.min((used / limit) * 100, 100) : 0;
@@ -145,8 +148,13 @@ export default function DashboardPage() {
           <nav className="flex items-center gap-5 text-sm">
             <Link href="/modules" className="text-gray-500 hover:text-gray-900">Modul</Link>
             <Link href="/settings" className="text-gray-500 hover:text-gray-900">Pengaturan</Link>
-            <form action="/auth/logout" method="POST">
-              <button className="text-gray-400 hover:text-gray-600">Keluar</button>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                fetch("/auth/logout", { method: "POST" }).then(() => router.push("/"));
+              }}
+            >
+              <button type="submit" className="text-gray-400 hover:text-gray-600">Keluar</button>
             </form>
           </nav>
         </div>
@@ -214,8 +222,8 @@ export default function DashboardPage() {
           )}
         </div>
 
-        {/* Quota bar (Pro/Sekolah) */}
-        {isPro && (
+        {/* Quota bar (Go/Plus/Sekolah) */}
+        {isGo && (
           <div className="bg-white rounded-xl border border-gray-200 p-5">
             <div className="flex items-center justify-between mb-3">
               <div>
@@ -237,7 +245,7 @@ export default function DashboardPage() {
               <div className="mt-3 flex items-center justify-between">
                 <p className="text-sm text-amber-600">Kuota habis bulan ini.</p>
                 <Link href="/settings/billing?topup=true" className="text-sm text-indigo-600 font-medium hover:underline">
-                  + Top-up Rp 5.000 →
+                  + Top-up Rp 10.000 →
                 </Link>
               </div>
             )}
@@ -249,7 +257,7 @@ export default function DashboardPage() {
           <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl border border-indigo-100 p-5">
             <div className="flex items-start justify-between">
               <div>
-                <h2 className="font-semibold text-gray-900 mb-1">Buka semua fitur dengan Guru Pro</h2>
+                <h2 className="font-semibold text-gray-900 mb-1">Buka semua fitur dengan Go</h2>
                 <p className="text-sm text-gray-500 mb-3">
                   Full AI generate modul + download PDF tanpa watermark + priority support.
                 </p>
@@ -257,7 +265,7 @@ export default function DashboardPage() {
                   href="/settings/billing"
                   className="inline-flex items-center gap-1 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700"
                 >
-                  Upgrade Rp 29.000/bulan →
+                  Upgrade Rp 49.000/bulan →
                 </Link>
               </div>
               <div className="text-4xl">🚀</div>

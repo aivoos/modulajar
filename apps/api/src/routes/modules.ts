@@ -20,7 +20,7 @@ export const moduleRoutes = new Elysia({ prefix: "/api/modules" })
 
     let q = supabase
       .from("modules")
-      .select("id, title, subject, fase, kelas, status, is_curated, fork_count, created_at, updated_at, published_at, tags")
+      .select("id, title, subject, phase, grade, duration_minutes, status, mode, is_curated, fork_count, source_module_id, is_public, slug, share_count, created_at, updated_at")
       .eq("user_id", userId)
       .order("updated_at", { ascending: false })
       .limit(limit);
@@ -49,14 +49,15 @@ export const moduleRoutes = new Elysia({ prefix: "/api/modules" })
       school_id: user?.school_id ?? null,
       title: body.title ?? "Modul Baru",
       subject: body.subject ?? "Bahasa Indonesia",
-      fase: body.fase ?? "C",
-      kelas: body.kelas ?? [10],
-      duration_weeks: body.duration_weeks ?? 4,
-      learning_style: body.learning_style ?? "campuran",
-      curriculum_version_id: body.curriculum_version_id,
-      module_template_id: body.module_template_id,
+      phase: body.phase ?? null,
+      grade: body.grade ?? null,
+      duration_minutes: body.duration_minutes ?? 80,
+      curriculum_version_id: body.curriculum_version_id ?? null,
+      template_id: body.template_id ?? null,
+      teaching_class_id: body.teaching_class_id ?? null,
       content: body.content ?? {},
       status: "draft",
+      mode: body.mode ?? "scratch",
     }).select().single();
 
     if (error) { set.status = 500; return { error: "create_failed" }; }

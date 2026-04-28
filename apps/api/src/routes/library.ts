@@ -19,7 +19,7 @@ export const libraryRoutes = new Elysia({ prefix: "/api/library" })
     if (error) { set.status = 500; return { error: "fetch_failed" }; }
     return { modules: data ?? [] };
   })
-  .post("/fork/:moduleId", async ({ params, request, set }) => {
+  .post("/fork/:id", async ({ params, request, set }) => {
     const userId = request.headers.get("X-User-ID");
     if (!userId) { set.status = 401; return { error: "unauthorized" }; }
 
@@ -29,12 +29,12 @@ export const libraryRoutes = new Elysia({ prefix: "/api/library" })
     const { data: original, error: fetchErr } = await supabase
       .from("modules")
       .select("*")
-      .eq("id", params["moduleId"])
+      .eq("id", params["id"])
       .single();
 
     if (fetchErr || !original) { set.status = 404; return { error: "module_not_found" }; }
 
-    // Fork: copy with new user_id, reset status
+    // Fork: copy with new user_id, reset status, clean fields
     const { data: user } = await supabase.from("users").select("school_id").eq("id", userId).single();
 
     const { data: forked, error: forkErr } = await supabase
@@ -43,18 +43,19 @@ export const libraryRoutes = new Elysia({ prefix: "/api/library" })
         user_id: userId,
         school_id: user?.school_id ?? null,
         curriculum_version_id: original.curriculum_version_id,
-        module_template_id: original.module_template_id,
-        title: `${original.title} (fork)`,
+        template_id: original.template_id,
+        teaching_class_id: original.teaching_class_id,
+        title: `${original.title} (salin)`,
         subject: original.subject,
-        fase: original.fase,
-        kelas: original.kelas,
-        duration_weeks: original.duration_weeks,
-        learning_style: original.learning_style,
+        phase: original.phase,
+        grade: original.grade,
+        duration_minutes: original.duration_minutes,
         content: original.content,
         status: "draft",
-        fork_from_module_id: original.id,
+        mode: "curated",
+        source_module_id: original.id,
       })
-      .select()
+      .select("id")
       .single();
 
     if (forkErr) { set.status = 500; return { error: "fork_failed" }; }

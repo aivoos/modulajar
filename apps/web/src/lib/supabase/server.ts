@@ -16,7 +16,10 @@ export async function createServerClient() {
 }
 
 /**
- * Get current user from server-side session (Server Components / Route Handlers)
+ * Get current user from server-side session (Server Components / Route Handlers).
+ *
+ * Uses setSession() so the Supabase client is aware of the current session,
+ * which is needed for service_role clients that don't auto-refresh tokens.
  */
 export async function getServerUser() {
   const cookieStore = await cookies();
@@ -26,9 +29,21 @@ export async function getServerUser() {
   if (!accessToken || !refreshToken) return null;
 
   const client = await createServerClient();
-  const { data: { user }, error } = await client.auth.getUser(accessToken);
 
-  if (error || !user) return null;
+  // Set session so the client knows about it (needed for service_role clients)
+  const { error: sessionError } = await client.auth.setSession({
+    access_token: accessToken,
+    refresh_token: refreshToken,
+  });
+
+  if (sessionError) return null;
+
+  const {
+    data: { user },
+    error: userError,
+  } = await client.auth.getUser();
+
+  if (userError || !user) return null;
 
   // Fetch extended user profile
   const { data: profile } = await client
@@ -37,5 +52,5 @@ export async function getServerUser() {
     .eq("id", user.id)
     .single();
 
-  return profile ? { ...user, profile } : user;
+  return profile ? { ...user, ...profile } : user;
 }

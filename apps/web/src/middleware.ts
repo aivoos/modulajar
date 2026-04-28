@@ -11,10 +11,26 @@ export async function middleware(request: NextRequest) {
 
   const supabase = await createServerClient();
 
-  // Get current user session
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Get session from cookies
+  const accessToken = request.cookies.get("sb-access-token")?.value;
+  const refreshToken = request.cookies.get("sb-refresh-token")?.value;
+
+  let user: { id: string } | null = null;
+
+  if (accessToken && refreshToken) {
+    // Set session so the client is aware of it
+    const { error: sessionError } = await supabase.auth.setSession({
+      access_token: accessToken,
+      refresh_token: refreshToken,
+    });
+
+    if (!sessionError) {
+      const {
+        data: { user: authUser },
+      } = await supabase.auth.getUser();
+      user = authUser;
+    }
+  }
 
   // Redirect unauthenticated users away from protected routes
   const isProtected = PROTECTED_ROUTES.some((route) => pathname.startsWith(route));
