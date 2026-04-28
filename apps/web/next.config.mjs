@@ -61,7 +61,7 @@ const withPWA = withPWAInit({
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  transpilePackages: ["@modulajar/shared", "@modulajar/db"],
+  transpilePackages: [],
 
   // Supabase and AI image optimizations
   images: {

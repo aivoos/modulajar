@@ -10,8 +10,6 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@modulajar/db": "workspace:*",
-    "@modulajar/shared": "workspace:*",
     "@sentry/browser": "^10.50.0",
     "@supabase/supabase-js": "^2.47.10",
     "@tiptap/extension-placeholder": "^3.22.4",
