@@ -1,5 +1,6 @@
 "use client";
 export const dynamic = 'force-dynamic';
+
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase/client";
@@ -8,7 +9,7 @@ import { useRouter } from "next/navigation";
 const PLAN_LIMITS: Record<string, { full_ai_per_month: number }> = {
   go: { full_ai_per_month: 10 },
   plus: { full_ai_per_month: 20 },
-  sekolah: { full_ai_per_month: 25 },
+  sekolah: { full_ai_per_month: 30 },
 };
 
 interface DashboardStats {
@@ -46,20 +47,75 @@ function StatCard({ label, value, icon, color }: { label: string; value: number;
   );
 }
 
+/** Get active academic year label for Indonesian school year (Jul–Jun) */
+function getActiveAcademicYear(): { label: string; year: number; semester: "ganjil" | "genap" } {
+  const now = new Date();
+  // WIB = UTC+7
+  const wib = new Date(now.getTime() + 7 * 60 * 60 * 1000);
+  const month = wib.getUTCMonth(); // 0-indexed
+  const wibYear = wib.getUTCFullYear();
+
+  if (month >= 6) {
+    // Jul–Dec: academic year is "2025/2026" (starts Jul 2025, ends Jun 2026)
+    return { label: `${wibYear}/${wibYear + 1}`, year: wibYear, semester: "ganjil" };
+  } else {
+    // Jan–Jun: academic year is "2024/2025" (started Jul 2024)
+    return { label: `${wibYear - 1}/${wibYear}`, year: wibYear - 1, semester: "genap" };
+  }
+}
+
+/** Get WIB greeting based on local time + 7h offset */
+function getWIBGreeting(): string {
+  const now = new Date();
+  const wib = new Date(now.getTime() + 7 * 60 * 60 * 1000);
+  const hour = wib.getUTCHours();
+  if (hour < 12) return "Selamat pagi";
+  if (hour < 15) return "Selamat siang";
+  if (hour < 18) return "Selamat sore";
+  return "Selamat malam";
+}
+
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats>({ draft: 0, published: 0, needs_migration: 0, total: 0 });
   const [sub, setSub] = useState<Subscription | null>(null);
   const [recentModules, setRecentModules] = useState<Module[]>([]);
   const [userName, setUserName] = useState("");
   const [loading, setLoading] = useState(true);
+  const [academicYear, setAcademicYear] = useState("");
   const router = useRouter();
 
   const load = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    const name = (user.user_metadata?.full_name as string | undefined) ?? user.email?.split("@")[0] ?? "Guru";
+    const name = (user.user_metadata?.full_name as string | undefined)
+      ?? (user.user_metadata?.name as string | undefined)
+      ?? user.email?.split("@")[0]
+      ?? "Guru";
     setUserName(name);
+
+    // Auto-create academic year if none exists (per-user logic)
+    const target = getActiveAcademicYear();
+    setAcademicYear(target.label);
+
+    // Check existing academic year by label
+    const { data: existingSameYear } = await supabase
+      .from("academic_years")
+      .select("id")
+      .ilike("label", `${target.label}%`)
+      .limit(1);
+
+    // If no academic year exists, create a personal one
+    if ((!existingSameYear || existingSameYear.length === 0)) {
+      await supabase.from("academic_years").insert({
+        label: `${target.label} (Personal)`,
+        year: target.year,
+        semester: target.semester,
+        start_date: `${target.year}-07-15`,
+        end_date: `${target.year + 1}-06-30`,
+        is_active: true,
+      });
+    }
 
     // Subscription
     const { data: subscription } = await supabase
@@ -122,8 +178,7 @@ export default function DashboardPage() {
   useEffect(() => { load(); }, [load]);
 
   // Computed values
-  const hour = new Date().getHours();
-  const greeting = hour < 12 ? "Selamat pagi" : hour < 15 ? "Selamat siang" : hour < 18 ? "Selamat sore" : "Selamat malam";
+  const greeting = getWIBGreeting();
   const firstName = userName.split(" ")[0] ?? "Guru";
 
   const isFree = sub?.plan === "free";
@@ -144,6 +199,11 @@ export default function DashboardPage() {
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">M</div>
             <span className="font-bold text-gray-900">Modulajar</span>
+            {academicYear && (
+              <span className="text-xs bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full font-medium">
+                {academicYear}
+              </span>
+            )}
           </div>
           <nav className="flex items-center gap-5 text-sm">
             <Link href="/modules" className="text-gray-500 hover:text-gray-900">Modul</Link>
