@@ -152,8 +152,8 @@ export default function RegisterPage() {
 
           <p className="text-xs text-gray-400 text-center">
             Dengan mendaftar, Anda menyetujui{" "}
-            <a href="#" className="underline">Syarat & Ketentuan</a> dan{" "}
-            <a href="#" className="underline">Kebijakan Privasi</a>.
+            <a href="/terms" className="underline">Syarat & Ketentuan</a> dan{" "}
+            <a href="/privacy" className="underline">Kebijakan Privasi</a>.
           </p>
         </form>
 

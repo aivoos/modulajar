@@ -1,12 +1,67 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Inter } from "next/font/google";
+import { AnalyticsProvider } from "@/providers/posthog";
+import { SentryPageFilter } from "@/providers/sentry";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Modulajar — Buat Modul Ajar Kurikulum Merdeka dalam menit",
-  description: "Buat modul ajar Kurikulum Merdeka dengan bantuan AI. Gratis untuk guru Indonesia.",
+  title: {
+    default: "Modulajar — Buat Modul Ajar Kurikulum Merdeka dalam menit",
+    template: "%s | Modulajar",
+  },
+  description:
+    "Buat modul ajar Kurikulum Merdeka dengan bantuan AI. Gratis untuk guru Indonesia.",
+  keywords: [
+    "modul ajar",
+    "kurikulum merdeka",
+    "AI guru",
+    "merdeka mengajar",
+    "CP TP ATP",
+  ],
+  authors: [{ name: "PT Modulajar Indonesia" }],
+  creator: "Modulajar",
+  publisher: "PT Modulajar Indonesia",
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL ?? "https://modulajar.app"
+  ),
+  openGraph: {
+    type: "website",
+    locale: "id_ID",
+    siteName: "Modulajar",
+    title: "Modulajar — Buat Modul Ajar Kurikulum Merdeka dalam menit",
+    description: "Buat modul ajar Kurikulum Merdeka dengan bantuan AI. Gratis untuk guru Indonesia.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Modulajar — Buat Modul Ajar Kurikulum Merdeka dalam menit",
+    description: "Buat modul ajar Kurikulum Merdeka dengan bantuan AI. Gratis untuk guru Indonesia.",
+    creator: "@modulajar",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  manifest: "/manifest.json",
+  icons: {
+    icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],
+    apple: "/icons/icon-192.png",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#4f46e5",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
 };
 
 export default function RootLayout({
@@ -16,7 +71,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="id">
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        <AnalyticsProvider>
+          <SentryPageFilter />
+          {children}
+        </AnalyticsProvider>
+      </body>
     </html>
   );
 }
