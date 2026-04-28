@@ -1,6 +1,21 @@
 // SchemaRenderer — renders ModuleTemplate.schema JSONB → React form
-import React from "react";
+// Ref: modulajar-master-v3.jsx — Day 9
+import React, { Suspense } from "react";
 import { type SchemaField, type SchemaSection, type ModuleContent } from "./types";
+import dynamic from "next/dynamic";
+
+// Lazy-load Tiptap editor (requires client-side hooks)
+const RichTextEditor = dynamic(
+  () => import("@/components/editor/RichTextEditor").then((m) => m.RichTextEditor),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm text-gray-400 bg-gray-50">
+        Memuat editor...
+      </div>
+    ),
+  }
+);
 
 interface Props {
   schema: SchemaSection[];
@@ -36,20 +51,47 @@ function TextField({ field, value, onChange, readOnly }: {
 function TextareaField({ field, value, onChange, readOnly }: {
   field: SchemaField; value: string | null; onChange: (v: string) => void; readOnly?: boolean;
 }) {
+  if (readOnly) {
+    return (
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          {field.label}
+          {field.required && <span className="text-red-500 ml-1">*</span>}
+        </label>
+        <textarea
+          value={value ?? ""}
+          disabled
+          rows={4}
+          className="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm resize-none bg-gray-50 text-gray-600"
+        />
+        {field.hint && <p className="text-xs text-gray-400 mt-1">{field.hint}</p>}
+      </div>
+    );
+  }
+
+  // Use Tiptap RichTextEditor for textarea fields in edit mode
   return (
     <div>
       <label className="block text-sm font-medium text-gray-700 mb-1">
         {field.label}
         {field.required && <span className="text-red-500 ml-1">*</span>}
       </label>
-      <textarea
-        value={value ?? ""}
-        onChange={(e) => onChange(e.target.value)}
-        disabled={readOnly}
-        placeholder={field.hint ?? field.label}
-        rows={4}
-        className="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none disabled:bg-gray-50 disabled:text-gray-600"
-      />
+      <Suspense fallback={
+        <textarea
+          value={value ?? ""}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={field.hint ?? field.label}
+          rows={4}
+          className="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+        />
+      }>
+        <RichTextEditor
+          value={value ?? ""}
+          onChange={onChange}
+          placeholder={field.hint ?? field.label}
+          readOnly={readOnly}
+        />
+      </Suspense>
       {field.hint && <p className="text-xs text-gray-400 mt-1">{field.hint}</p>}
     </div>
   );
@@ -163,6 +205,51 @@ function SectionRenderer({ section, content, onChange, readOnly, depth = 0 }: {
                 onChange={(v) => onChange(field.key, v)}
                 readOnly={readOnly}
               />
+            );
+          }
+
+          if (field.type === "checkbox") {
+            return (
+              <div key={field.key} className="flex items-start gap-3">
+                <input
+                  type="checkbox"
+                  id={`cb-${field.key}`}
+                  checked={!!value}
+                  onChange={(e) => onChange(field.key, e.target.checked)}
+                  disabled={readOnly}
+                  className="mt-1 w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                />
+                <div>
+                  <label htmlFor={`cb-${field.key}`} className="text-sm font-medium text-gray-700">
+                    {field.label}
+                    {field.required && <span className="text-red-500 ml-1">*</span>}
+                  </label>
+                  {field.hint && <p className="text-xs text-gray-400 mt-0.5">{field.hint}</p>}
+                </div>
+              </div>
+            );
+          }
+
+          if (field.type === "select") {
+            return (
+              <div key={field.key}>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {field.label}
+                  {field.required && <span className="text-red-500 ml-1">*</span>}
+                </label>
+                <select
+                  value={(value as string | null) ?? ""}
+                  onChange={(e) => onChange(field.key, e.target.value)}
+                  disabled={readOnly}
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white disabled:bg-gray-50"
+                >
+                  <option value="">— Pilih —</option>
+                  {(field.options ?? []).map((opt) => (
+                    <option key={opt} value={opt}>{opt}</option>
+                  ))}
+                </select>
+                {field.hint && <p className="text-xs text-gray-400 mt-1">{field.hint}</p>}
+              </div>
             );
           }
 
