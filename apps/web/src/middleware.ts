@@ -9,27 +9,37 @@ const AUTH_ROUTES = ["/login", "/register", "/onboarding"];
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  const supabase = await createServerClient();
-
-  // Get session from cookies
-  const accessToken = request.cookies.get("sb-access-token")?.value;
-  const refreshToken = request.cookies.get("sb-refresh-token")?.value;
+  let supabase: Awaited<ReturnType<typeof createServerClient>> | null = null;
+  try {
+    supabase = await createServerClient();
+  } catch (err) {
+    console.warn("[middleware] Supabase client init failed:", err);
+    // Env vars not set yet — pass through
+    return NextResponse.next();
+  }
 
   let user: { id: string } | null = null;
 
-  if (accessToken && refreshToken) {
-    // Set session so the client is aware of it
-    const { error: sessionError } = await supabase.auth.setSession({
-      access_token: accessToken,
-      refresh_token: refreshToken,
-    });
+  try {
+    const accessToken = request.cookies.get("sb-access-token")?.value;
+    const refreshToken = request.cookies.get("sb-refresh-token")?.value;
 
-    if (!sessionError) {
-      const {
-        data: { user: authUser },
-      } = await supabase.auth.getUser();
-      user = authUser;
+    if (accessToken && refreshToken) {
+      const { error: sessionError } = await supabase.auth.setSession({
+        access_token: accessToken,
+        refresh_token: refreshToken,
+      });
+
+      if (!sessionError) {
+        const {
+          data: { user: authUser },
+        } = await supabase.auth.getUser();
+        user = authUser;
+      }
     }
+  } catch (err) {
+    console.warn("[middleware] Auth check failed:", err);
+    // Pass through on error
   }
 
   // Redirect unauthenticated users away from protected routes
