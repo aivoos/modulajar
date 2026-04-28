@@ -3,7 +3,7 @@ import { Elysia } from "elysia";
 import { createAdminClient } from "@modulajar/db";
 import { PLAN_LIMITS } from "@modulajar/shared";
 
-export const subscriptionRoutes = new Elysia({ prefix: "/api/subscriptions" })
+export const subscriptionRoutes = new Elysia({ prefix: "subscriptions" })
   .get("/me", async ({ request, set }) => {
     const userId = request.headers.get("X-User-ID");
     if (!userId) { set.status = 401; return { error: "unauthorized" }; }

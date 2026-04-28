@@ -3,7 +3,7 @@
 import { Elysia } from "elysia";
 import { createAdminClient } from "@modulajar/db";
 
-export const journalRoutes = new Elysia({ prefix: "/api/journals" })
+export const journalRoutes = new Elysia({ prefix: "journals" })
   .get("/", async ({ request, set }) => {
     const userId = request.headers.get("X-User-ID");
     if (!userId) { set.status = 401; return { error: "unauthorized" }; }
@@ -118,7 +118,7 @@ export const journalRoutes = new Elysia({ prefix: "/api/journals" })
   });
 
 // Attendance routes
-export const attendanceRoutes = new Elysia({ prefix: "/api/attendances" })
+export const attendanceRoutes = new Elysia({ prefix: "attendances" })
   .get("/", async ({ request, set }) => {
     const url = new URL(request.url);
     const journalId = url.searchParams.get("journal_id");

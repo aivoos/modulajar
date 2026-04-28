@@ -7,7 +7,7 @@ function getUserId(request: Request): string | null {
   return request.headers.get("X-User-ID");
 }
 
-export const moduleRoutes = new Elysia({ prefix: "/api/modules" })
+export const moduleRoutes = new Elysia({ prefix: "modules" })
   .get("/", async ({ request, set }) => {
     const userId = getUserId(request);
     if (!userId) { set.status = 401; return { error: "unauthorized" }; }

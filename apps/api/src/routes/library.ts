@@ -2,7 +2,7 @@
 import { Elysia } from "elysia";
 import { createAdminClient } from "@modulajar/db";
 
-export const libraryRoutes = new Elysia({ prefix: "/api/library" })
+export const libraryRoutes = new Elysia({ prefix: "library" })
   .get("/curated", async ({ request, set }) => {
     const userId = request.headers.get("X-User-ID");
     if (!userId) { set.status = 401; return { error: "unauthorized" }; }

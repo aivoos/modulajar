@@ -221,7 +221,7 @@ async function launchBrowser() {
 
 // ── Route ────────────────────────────────────────────────────────
 
-export const invoiceRoutes = new Elysia({ prefix: "/api/invoice" })
+export const invoiceRoutes = new Elysia({ prefix: "invoice" })
 
   // POST /api/invoice/:paymentId/pdf — generate + upload invoice PDF
   .post("/:paymentId/pdf", async ({ params, request, set }) => {

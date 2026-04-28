@@ -333,7 +333,7 @@ ${c["diferensiasi"] || c["asesmen"] ? `
 
 // ── Route Handler ───────────────────────────────────────────────
 
-export const pdfRoutes = new Elysia({ prefix: "/api/modules" })
+export const pdfRoutes = new Elysia({ prefix: "modules" })
   .get("/:id/export", async ({ params, request, set }) => {
     const userId = request.headers.get("X-User-ID");
     if (!userId) { set.status = 401; return { error: "unauthorized" }; }

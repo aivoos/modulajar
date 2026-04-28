@@ -11,7 +11,7 @@ function getUserId(request: Request): string | null {
 }
 
 // GET /api/agent/quota — check user's AI quota
-export const agentRoutes = new Elysia({ prefix: "/api/agent" })
+export const agentRoutes = new Elysia({ prefix: "agent" })
   .get("/quota", async ({ request, set }) => {
     const userId = getUserId(request);
     if (!userId) { set.status = 401; return { error: "unauthorized" }; }

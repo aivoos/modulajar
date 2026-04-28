@@ -42,7 +42,7 @@ async function createXenditInvoice(params: {
 
 // ── Routes ───────────────────────────────────────────────────
 
-export const billingRoutes = new Elysia({ prefix: "/api/billing" })
+export const billingRoutes = new Elysia({ prefix: "billing" })
 
   // POST /api/billing/checkout — create Xendit invoice for plan upgrade
   .post("/checkout", async ({ request, set }) => {

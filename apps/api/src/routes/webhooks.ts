@@ -154,7 +154,7 @@ async function handleXenditWebhook(payload: Record<string, unknown>) {
     .eq("event", xenditId);
 }
 
-export const webhookRoutes = new Elysia({ prefix: "/api/webhooks" })
+export const webhookRoutes = new Elysia({ prefix: "webhooks" })
   .post("/xendit", async ({ request }) => {
     if (!await verifyXenditSignature(request)) {
       return new Response(JSON.stringify({ error: "invalid_signature" }), {

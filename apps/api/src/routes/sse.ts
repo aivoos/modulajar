@@ -82,7 +82,7 @@ function createSSEStream(jobId: string, userId: string): ReadableStream<Uint8Arr
   });
 }
 
-export const sseRoutes = new Elysia({ prefix: "/api/agent" })
+export const sseRoutes = new Elysia({ prefix: "agent" })
   .get("/jobs/:id/stream", async ({ params, request, set }) => {
     const userId = getUserId(request);
     if (!userId) { set.status = 401; return { error: "unauthorized" }; }

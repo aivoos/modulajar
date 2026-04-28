@@ -3,7 +3,7 @@ import { Elysia } from "elysia";
 import { createAdminClient } from "@modulajar/db";
 import { CreateAcademicYearBody } from "../lib/schemas";
 
-export const academicYearRoutes = new Elysia({ prefix: "/api/academic-years" })
+export const academicYearRoutes = new Elysia({ prefix: "academic-years" })
   .get("/", async ({ request, set }) => {
     const userId = request.headers.get("X-User-ID");
     if (!userId) { set.status = 401; return { error: "unauthorized" }; }

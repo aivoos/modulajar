@@ -3,7 +3,7 @@
 import { Elysia } from "elysia";
 import { createAdminClient } from "@modulajar/db";
 
-export const teachingClassRoutes = new Elysia({ prefix: "/api/teaching-classes" })
+export const teachingClassRoutes = new Elysia({ prefix: "teaching-classes" })
   .get("/", async ({ request, set }) => {
     const userId = request.headers.get("X-User-ID");
     if (!userId) { set.status = 401; return { error: "unauthorized" }; }

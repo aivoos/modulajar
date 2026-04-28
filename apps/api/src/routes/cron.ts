@@ -14,7 +14,7 @@ function verifyCron(request: Request): boolean {
 
 // ── Quota Reset (monthly, run on 1st of month) ────────────────────
 
-export const quotaResetCron = new Elysia({ prefix: "/api/cron" })
+export const quotaResetCron = new Elysia({ prefix: "cron" })
   .post("/quota_reset", async ({ request, set }) => {
     if (!verifyCron(request)) { set.status = 403; return { error: "forbidden" }; }
 
@@ -53,7 +53,7 @@ export const quotaResetCron = new Elysia({ prefix: "/api/cron" })
 
 // ── Grace Period Check (daily) ───────────────────────────────────
 
-export const gracePeriodCron = new Elysia({ prefix: "/api/cron" })
+export const gracePeriodCron = new Elysia({ prefix: "cron" })
   .post("/grace_period_check", async ({ request, set }) => {
     if (!verifyCron(request)) { set.status = 403; return { error: "forbidden" }; }
 
@@ -125,7 +125,7 @@ export const gracePeriodCron = new Elysia({ prefix: "/api/cron" })
 
 // ── Quota Warning (daily — check >70% usage) ─────────────────────
 
-export const quotaWarningCron = new Elysia({ prefix: "/api/cron" })
+export const quotaWarningCron = new Elysia({ prefix: "cron" })
   .post("/quota_warning", async ({ request, set }) => {
     if (!verifyCron(request)) { set.status = 403; return { error: "forbidden" }; }
 
@@ -171,7 +171,7 @@ export const quotaWarningCron = new Elysia({ prefix: "/api/cron" })
 
 // ── Subscription Expiry Check (daily) ────────────────────────────
 
-export const expiryCron = new Elysia({ prefix: "/api/cron" })
+export const expiryCron = new Elysia({ prefix: "cron" })
   .post("/subscription_expiry", async ({ request, set }) => {
     if (!verifyCron(request)) { set.status = 403; return { error: "forbidden" }; }
 
