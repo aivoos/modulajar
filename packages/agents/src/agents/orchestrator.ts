@@ -61,32 +61,36 @@ export class Orchestrator {
     this.handlers[event]?.(data);
   }
 
-  async run(): Promise<Record<string, unknown>> {
+  async run(existingJobId?: string): Promise<Record<string, unknown>> {
     const supabase = createAdminClient();
     const TOTAL_STEPS = 6;
 
-    // ── Step 0: Create AgentJob record ────────────────────────────
-    const { data: job } = await supabase
-      .from("agent_jobs")
-      .insert({
-        user_id: this.ctx.userId,
-        job_type: "modul_generate",
-        status: "queued",
-        input: {
-          subject: this.ctx.subject,
-          phase: this.ctx.phase,
-          grade: this.ctx.grade,
-          topik: this.ctx.topik,
-          duration_minutes: this.ctx.durationMinutes,
-          learning_style: this.ctx.learningStyle,
-        },
-        module_id: this.ctx.moduleId,
-        teaching_class_id: this.ctx.teachingClassId ?? null,
-      })
-      .select()
-      .single();
+    // ── Step 0: Reuse existing job or create one ─────────────────
+    let jobId = existingJobId;
+    if (!jobId) {
+      const { data: job } = await supabase
+        .from("agent_jobs")
+        .insert({
+          user_id: this.ctx.userId,
+          job_type: "modul_generate",
+          status: "queued",
+          input: {
+            subject: this.ctx.subject,
+            phase: this.ctx.phase,
+            grade: this.ctx.grade,
+            topik: this.ctx.topik,
+            duration_minutes: this.ctx.durationMinutes,
+            learning_style: this.ctx.learningStyle,
+          },
+          module_id: this.ctx.moduleId,
+          teaching_class_id: this.ctx.teachingClassId ?? null,
+        })
+        .select("id")
+        .single();
 
-    const jobId = job?.id;
+      jobId = job?.id;
+    }
+
     if (!jobId) throw new Error("Failed to create agent_job record");
 
     // Update to running

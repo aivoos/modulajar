@@ -215,13 +215,21 @@ async function dispatchGeneration(
   userId: string,
   plan: string,
   moduleId: string,
-  body: ReturnType<typeof GenerateBody.parse>
+  body: ReturnType<typeof GenerateBody.parse>,
+  existingJobId?: string
 ): Promise<void> {
   const { Orchestrator } = await import("@modulajar/agents");
   const supabase = createAdminClient();
 
-  // Mark job running
-  await supabase.from("agent_jobs").update({ status: "running", started_at: new Date().toISOString() }).eq("id", jobId);
+  // Mark job running (or re-use existing job if passed)
+  await supabase
+    .from("agent_jobs")
+    .update({
+      status: "running",
+      started_at: new Date().toISOString(),
+      module_id: moduleId, // ensure module_id is set
+    })
+    .eq("id", jobId);
 
   const ctx: ModuleGenerationContext = {
     userId,
@@ -240,26 +248,46 @@ async function dispatchGeneration(
   const orchestrator = new Orchestrator(ctx);
 
   orchestrator
+    .on("step_start", async (data) => {
+      // Log step start to agent_steps
+      await supabase.from("agent_steps").upsert({
+        job_id: jobId,
+        agent: data.agent,
+        status: "running",
+        step_order: data.step,
+      }).eq("job_id", jobId).eq("agent", data.agent);
+    })
     .on("step_done", async (data) => {
       await supabase.from("agent_jobs").update({ status: "running" }).eq("id", jobId);
-      // Log to console for debugging; SSE will handle real-time
       console.log(`[agent] Step ${data.step} done: ${data.agent}, cost Rp ${data.costIdr}`);
     })
     .on("done", async (data) => {
       console.log(`[agent] Job ${jobId} done: total cost Rp ${data.totalCostIdr}, ${data.totalTokens} tokens`);
 
-      // Update quota
-      const { data: sub } = await supabase
-        .from("subscriptions")
-        .select("ai_quota_used")
-        .eq("user_id", userId)
-        .single();
+      // Update module content
+      await supabase
+        .from("modules")
+        .update({
+          content: data.moduleContent as Record<string, unknown>,
+          mode: "full_ai",
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", moduleId);
 
-      if (sub && plan !== "free") {
-        await supabase
+      // Update quota (skip free tier)
+      if (plan !== "free") {
+        const { data: sub } = await supabase
           .from("subscriptions")
-          .update({ ai_quota_used: (sub.ai_quota_used ?? 0) + 1 })
-          .eq("user_id", userId);
+          .select("ai_quota_used")
+          .eq("user_id", userId)
+          .single();
+
+        if (sub) {
+          await supabase
+            .from("subscriptions")
+            .update({ ai_quota_used: (sub.ai_quota_used ?? 0) + 1 })
+            .eq("user_id", userId);
+        }
       }
 
       await supabase.from("agent_jobs").update({
@@ -280,7 +308,7 @@ async function dispatchGeneration(
     });
 
   try {
-    await orchestrator.run();
+    await orchestrator.run(jobId);
   } catch (err) {
     console.error(`[agent] Orchestrator failed for job ${jobId}:`, err);
     await supabase.from("agent_jobs").update({

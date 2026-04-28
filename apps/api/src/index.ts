@@ -49,10 +49,12 @@ const { webhookRoutes } = await import("./routes/webhooks");
 const { moduleRoutes } = await import("./routes/modules");
 const { subscriptionRoutes } = await import("./routes/subscriptions");
 const { libraryRoutes } = await import("./routes/library");
+const { sseRoutes } = await import("./routes/sse");
 
 app
   .use(authRoutes)
   .use(agentRoutes)
+  .use(sseRoutes)
   .use(webhookRoutes)
   .use(moduleRoutes)
   .use(subscriptionRoutes)
