@@ -3,14 +3,16 @@
 FROM node:20-alpine
 WORKDIR /app
 
+# Corepack enables pnpm via packageManager field
+RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
+
 # Copy monorepo config
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY packages ./packages
 COPY apps/api/package.json ./apps/api/
 
 # Install all workspace deps (resolves workspace:*)
-RUN npm install -g pnpm@9 && \
-    pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile
 
 # Copy API source
 COPY apps/api/src ./apps/api/src
