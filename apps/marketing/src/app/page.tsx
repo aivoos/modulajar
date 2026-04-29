@@ -2,171 +2,258 @@ import Link from "next/link";
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div style={{ background: "#ffffff", minHeight: "100vh" }}>
 
       {/* ── Navbar ─────────────────────────────────────────── */}
-      <header className="sticky top-0 z-50 border-b border-gray-100 bg-white/80 backdrop-blur-md">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center shadow-sm shadow-indigo-200">
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                <path d="M3 3h5v5H3zM10 3h5v5h-5zM3 10h5v5H3zM13 12l3 3M16 12l-3 3" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </div>
-            <span className="font-bold text-gray-900 text-lg tracking-tight">Modulajar</span>
-          </Link>
+      <header style={{
+        position: "sticky", top: 0, zIndex: 50,
+        background: "rgba(255,255,255,0.85)",
+        backdropFilter: "blur(12px)",
+        borderBottom: "1px solid #f3f4f6",
+      }}>
+        <div className="container">
+          <div style={{
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+            height: "64px",
+          }}>
+            <Link href="/" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <div style={{
+                width: "36px", height: "36px",
+                background: "linear-gradient(135deg, #4f46e5 0%, #4338ca 100%)",
+                borderRadius: "10px",
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>
+                <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
+                  <path d="M3 3h5v5H3zM10 3h5v5h-5zM3 10h5v5H3zM13 12l3 3M16 12l-3 3" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+              <span style={{ fontWeight: 700, fontSize: "16px", color: "#111827" }}>Modulajar</span>
+            </Link>
 
-          {/* Nav links */}
-          <nav className="hidden md:flex items-center gap-8">
-            <Link href="/#fitur" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">Fitur</Link>
-            <Link href="/pricing" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">Harga</Link>
-            <Link href="/blog/cara-buat-modul-ajar" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">Blog</Link>
-          </nav>
-
-          {/* CTA */}
-          <div className="flex items-center gap-3">
-            <Link href="/login" className="btn btn-ghost text-sm hidden sm:inline-flex">Masuk</Link>
-            <Link href="/register" className="btn btn-primary text-sm shadow-md">Mulai Gratis</Link>
+            <nav style={{ display: "flex", alignItems: "center", gap: "32px" }}>
+              <Link href="/#fitur" style={{ fontSize: "14px", color: "#6b7280", fontWeight: 500 }}>Fitur</Link>
+              <Link href="/pricing" style={{ fontSize: "14px", color: "#6b7280", fontWeight: 500 }}>Harga</Link>
+              <Link href="/blog/cara-buat-modul-ajar" style={{ fontSize: "14px", color: "#6b7280", fontWeight: 500 }}>Blog</Link>
+              <Link href="/register" style={{
+                display: "inline-flex", alignItems: "center", justifyContent: "center",
+                padding: "8px 20px",
+                background: "#111827", color: "#fff",
+                fontSize: "14px", fontWeight: 600,
+                borderRadius: "8px",
+              }}>
+                Mulai Gratis
+              </Link>
+            </nav>
           </div>
         </div>
       </header>
 
       {/* ── Hero ───────────────────────────────────────────── */}
-      <section className="hero-gradient relative">
-        {/* Decorative blob */}
-        <div className="absolute top-0 right-0 w-[650px] h-[650px] opacity-25 pointer-events-none hidden md:block">
-          <svg viewBox="0 0 650 650" fill="none" className="w-full h-full">
-            <circle cx="500" cy="120" r="320" fill="url(#hg1)"/>
-            <defs><radialGradient id="hg1" cx="50%" cy="50%" r="50%"><stop offset="0%" stopColor="#818cf8" stopOpacity="0.35"/><stop offset="100%" stopColor="#818cf8" stopOpacity="0"/></radialGradient></defs>
-          </svg>
-        </div>
-        <div className="absolute bottom-0 left-0 w-[450px] h-[450px] opacity-20 pointer-events-none hidden md:block">
-          <svg viewBox="0 0 450 450" fill="none" className="w-full h-full">
-            <circle cx="80" cy="320" r="260" fill="url(#hg2)"/>
-            <defs><radialGradient id="hg2" cx="50%" cy="50%" r="50%"><stop offset="0%" stopColor="#c084fc" stopOpacity="0.3"/><stop offset="100%" stopColor="#c084fc" stopOpacity="0"/></radialGradient></defs>
-          </svg>
-        </div>
+      <section style={{
+        position: "relative", overflow: "hidden",
+        paddingTop: "80px", paddingBottom: "80px",
+        background: "linear-gradient(180deg, #ffffff 0%, #f9fafb 100%)",
+      }}>
+        {/* Subtle gradient blobs */}
+        <div aria-hidden style={{
+          position: "absolute", top: "-20%", right: "-10%", width: "600px", height: "600px",
+          background: "radial-gradient(circle, rgba(79,70,229,0.08) 0%, transparent 70%)",
+          pointerEvents: "none",
+        }}/>
+        <div aria-hidden style={{
+          position: "absolute", bottom: "-10%", left: "-5%", width: "500px", height: "500px",
+          background: "radial-gradient(circle, rgba(167,139,250,0.06) 0%, transparent 70%)",
+          pointerEvents: "none",
+        }}/>
 
-        <div className="relative max-w-6xl mx-auto px-6 pt-20 pb-28 text-center">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 bg-indigo-50 text-indigo-700 text-sm font-medium px-4 py-1.5 rounded-full mb-8 border border-indigo-100">
-            <span className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></span>
-            Gratis 2 modul/bulan — tanpa kartu kredit
-          </div>
+        <div className="container" style={{ position: "relative", zIndex: 1 }}>
+          <div style={{ maxWidth: "720px", margin: "0 auto", textAlign: "center" }}>
 
-          {/* Headline */}
-          <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 tracking-tight leading-[1.1] mb-6">
-            Modul Ajar Kurikulum Merdeka
-            <span className="block text-indigo-600 mt-2">dalam 60 Detik</span>
-          </h1>
-
-          {/* Subheadline */}
-          <p className="text-lg md:text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed mb-10">
-            AI membuat Capaian Pembelajaran, Tujuan Pembelajaran, Alur TP, Kegiatan,
-            dan Asesmen — otomatis sesuai format BS KAP.
-          </p>
-
-          {/* CTAs */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-10">
-            <Link href="/register" className="btn btn-primary text-base px-8 py-3.5 shadow-lg shadow-indigo-200">
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 2v14M2 9h14" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"/></svg>
-              Buat Modul Gratis
-            </Link>
-            <Link href="/#cara-kerja" className="btn btn-outline text-base px-8 py-3.5">
-              Lihat Cara Kerjanya
-            </Link>
-          </div>
-
-          {/* Social proof */}
-          <div className="flex flex-wrap items-center justify-center gap-5 text-sm text-gray-400">
-            <div className="flex items-center gap-1.5">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="#f59e0b"><path d="M7 1l1.8 3.6 3.9.6-2.8 2.7.7 3.9L7 9.8 4.4 11.8l.7-3.9L1.3 5.2l3.9-.6z"/></svg>
-              <span className="font-medium text-gray-700">4.8</span>
-              <span>rating guru</span>
+            {/* Badge */}
+            <div style={{
+              display: "inline-flex", alignItems: "center", gap: "8px",
+              padding: "6px 14px",
+              background: "#f0fdf4", border: "1px solid #bbf7d0",
+              borderRadius: "9999px", marginBottom: "32px",
+            }}>
+              <span style={{
+                width: "6px", height: "6px",
+                background: "#22c55e", borderRadius: "50%",
+                boxShadow: "0 0 8px rgba(34,197,94,0.5)",
+              }}/>
+              <span style={{ fontSize: "13px", fontWeight: 500, color: "#166534" }}>
+                Gratis 2 modul/bulan — tanpa kartu kredit
+              </span>
             </div>
-            <span className="text-gray-200 hidden sm:block">·</span>
-            <span>342+ guru aktif</span>
-            <span className="text-gray-200 hidden sm:block">·</span>
-            <span>Sesuai BS KAP</span>
-          </div>
 
-          {/* Mockup */}
-          <div className="mt-16 max-w-3xl mx-auto">
-            <div className="bg-gray-900 rounded-2xl shadow-2xl border border-gray-800 overflow-hidden">
-              <div className="flex items-center gap-2 px-4 py-3 bg-gray-800 border-b border-gray-700">
-                <div className="w-3 h-3 rounded-full bg-red-500/80"/>
-                <div className="w-3 h-3 rounded-full bg-yellow-500/80"/>
-                <div className="w-3 h-3 rounded-full bg-green-500/80"/>
-                <span className="ml-3 text-xs text-gray-400 font-mono">Modulajar AI</span>
+            {/* Headline */}
+            <h1 style={{
+              fontSize: "clamp(36px, 6vw, 60px)",
+              fontWeight: 800,
+              lineHeight: 1.05,
+              letterSpacing: "-0.03em",
+              color: "#111827",
+              marginBottom: "24px",
+            }}>
+              Modul Ajar Kurikulum Merdeka
+              <br/>
+              <span style={{ color: "#6b7280" }}>dalam 60 Detik</span>
+            </h1>
+
+            {/* Subheadline */}
+            <p style={{
+              fontSize: "clamp(16px, 2vw, 19px)",
+              color: "#6b7280",
+              lineHeight: 1.65,
+              marginBottom: "40px",
+              maxWidth: "560px",
+              margin: "0 auto 40px",
+            }}>
+              AI membuat Capaian Pembelajaran, Tujuan Pembelajaran, Alur TP, Kegiatan,
+              dan Asesmen — otomatis sesuai format BS KAP.
+            </p>
+
+            {/* CTAs */}
+            <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap", marginBottom: "32px" }}>
+              <Link href="/register" style={{
+                display: "inline-flex", alignItems: "center", gap: "8px",
+                padding: "12px 24px",
+                background: "#111827", color: "#fff",
+                fontSize: "15px", fontWeight: 600,
+                borderRadius: "10px",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+              }}>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M8 2v12M2 8h12" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"/>
+                </svg>
+                Buat Modul Gratis
+              </Link>
+              <Link href="/#cara-kerja" style={{
+                display: "inline-flex", alignItems: "center", gap: "8px",
+                padding: "12px 24px",
+                background: "#fff", color: "#374151",
+                fontSize: "15px", fontWeight: 600,
+                border: "1px solid #e5e7eb",
+                borderRadius: "10px",
+                boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+              }}>
+                Lihat Demo
+              </Link>
+            </div>
+
+            {/* Social proof */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "20px", flexWrap: "wrap" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                {[...Array(5)].map((_, i) => (
+                  <svg key={i} width="14" height="14" viewBox="0 0 14 14" fill="#f59e0b">
+                    <path d="M7 1l1.8 3.6 3.9.6-2.8 2.7.7 3.9L7 9.8 4.4 11.8l.7-3.9L1.3 5.2l3.9-.6z"/>
+                  </svg>
+                ))}
+                <span style={{ fontSize: "13px", fontWeight: 600, color: "#374151" }}>4.8/5</span>
+                <span style={{ fontSize: "13px", color: "#9ca3af" }}>rating guru</span>
               </div>
-              <div className="p-6 text-left">
-                <div className="flex items-center gap-3 mb-5">
-                  <div className="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-bold text-sm">M</div>
+              <span style={{ color: "#e5e7eb" }}>·</span>
+              <span style={{ fontSize: "13px", color: "#6b7280" }}>342+ guru aktif</span>
+              <span style={{ color: "#e5e7eb" }}>·</span>
+              <span style={{ fontSize: "13px", color: "#6b7280" }}>Sesuai BS KAP</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Mockup ─────────────────────────────────────────── */}
+      <section style={{ paddingBottom: "80px", background: "linear-gradient(180deg, #f9fafb 0%, #ffffff 100%)" }}>
+        <div className="container">
+          <div style={{
+            maxWidth: "900px", margin: "0 auto",
+            background: "#fff",
+            borderRadius: "16px",
+            border: "1px solid #e5e7eb",
+            boxShadow: "0 0 0 1px rgba(0,0,0,0.03), 0 20px 40px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04)",
+            overflow: "hidden",
+          }}>
+            {/* Chrome bar */}
+            <div style={{
+              display: "flex", alignItems: "center", gap: "6px",
+              padding: "12px 16px",
+              background: "#f9fafb",
+              borderBottom: "1px solid #e5e7eb",
+            }}>
+              <div style={{ width: "10px", height: "10px", borderRadius: "50%", background: "#f87171" }}/>
+              <div style={{ width: "10px", height: "10px", borderRadius: "50%", background: "#fbbf24" }}/>
+              <div style={{ width: "10px", height: "10px", borderRadius: "50%", background: "#34d399" }}/>
+            </div>
+
+            {/* App content */}
+            <div style={{ padding: "40px 32px", background: "#fafafa" }}>
+              <div style={{
+                background: "#fff",
+                borderRadius: "12px",
+                border: "1px solid #e5e7eb",
+                padding: "24px 28px",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+              }}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "16px" }}>
                   <div>
-                    <div className="text-white text-sm font-semibold">Modulajar AI Generator</div>
-                    <div className="text-gray-400 text-xs">Mulai generate...</div>
+                    <div style={{ width: "120px", height: "14px", background: "#e5e7eb", borderRadius: "6px", marginBottom: "6px" }}/>
+                    <div style={{ width: "200px", height: "10px", background: "#f3f4f6", borderRadius: "4px" }}/>
                   </div>
+                  <div style={{ width: "80px", height: "28px", background: "#4f46e5", borderRadius: "6px" }}/>
                 </div>
-                <div className="space-y-2.5">
-                  {[
-                    { icon: "check", text: "Capaian Pembelajaran generated", color: "text-green-400" },
-                    { icon: "check", text: "Tujuan Pembelajaran (6 TP) created", color: "text-green-400" },
-                    { icon: "check", text: "Alur TP & Asesmen Sumatif done", color: "text-green-400" },
-                    { icon: "check", text: "3 versi diferensiasi (VAK) ready", color: "text-indigo-400" },
-                    { icon: "spark", text: "Modul siap di-download", color: "text-amber-400" },
-                  ].map((line, i) => (
-                    <div key={i} className={`flex items-center gap-3 text-xs font-mono ${line.color}`}>
-                      <span className="w-5 h-5 flex items-center justify-center bg-white/10 rounded-md flex-shrink-0">
-                        {line.icon === "spark" ? "★" : "✓"}
-                      </span>
-                      <span>{line.text}</span>
-                    </div>
-                  ))}
-                </div>
+                <div style={{ width: "100%", height: "8px", background: "#f3f4f6", borderRadius: "4px", marginBottom: "8px" }}/>
+                <div style={{ width: "100%", height: "8px", background: "#f3f4f6", borderRadius: "4px", marginBottom: "8px" }}/>
+                <div style={{ width: "75%", height: "8px", background: "#f3f4f6", borderRadius: "4px", marginBottom: "20px" }}/>
+                <div style={{ width: "100%", height: "32px", background: "#111827", borderRadius: "8px" }}/>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ── Cara Kerja ──────────────────────────────────────── */}
-      <section id="cara-kerja" className="py-24 bg-gray-50">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <div className="badge badge-primary mb-4">3 Langkah</div>
-            <h2 className="text-4xl font-bold text-gray-900 tracking-tight mb-4">Bagaimana Modulajar Bekerja</h2>
-            <p className="text-gray-500 text-lg max-w-md mx-auto">Simpel. Masuk, pilih mapel, generate — selesai.</p>
+      {/* ── Cara Kerja ─────────────────────────────────────── */}
+      <section id="cara-kerja" style={{ padding: "80px 0", background: "#fafafa" }}>
+        <div className="container">
+          <div style={{ textAlign: "center", marginBottom: "56px" }}>
+            <h2 style={{ fontSize: "clamp(28px, 4vw, 40px)", fontWeight: 800, color: "#111827", letterSpacing: "-0.02em", marginBottom: "12px" }}>
+              Cara Kerja
+            </h2>
+            <p style={{ fontSize: "17px", color: "#6b7280", maxWidth: "480px", margin: "0 auto" }}>
+              Tiga langkah mudah untuk membuat modul ajar berkualitas
+            </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+            gap: "20px",
+            maxWidth: "900px",
+            margin: "0 auto",
+          }}>
             {[
-              {
-                step: "01",
-                title: "Pilih Mapel & Fase",
-                desc: "Matematika, IPA, Bahasa Indonesia — pilih fase A sampai F sesuai kelas yang kamu ajar.",
-                icon: <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect x="3" y="6" width="22" height="16" rx="3" stroke="currentColor" strokeWidth="2"/><path d="M3 11h22M9 6v16" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>,
-              },
-              {
-                step: "02",
-                title: "Generate dengan AI",
-                desc: "CP, Tujuan Pembelajaran, ATP, dan Asesmen dibuat otomatis dalam 60 detik.",
-                icon: <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="5" stroke="currentColor" strokeWidth="2"/><path d="M14 5v3M14 20v3M5 14h3M20 14h3M7.93 7.93l2.12 2.12M17.95 17.95l2.12 2.12M7.93 20.07l2.12-2.12M17.95 10.05l2.12-2.12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>,
-              },
-              {
-                step: "03",
-                title: "Edit & Export PDF",
-                desc: "Review output, edit yang perlu, lalu export PDF siap cetak atau publish ke murid.",
-                icon: <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><path d="M7 3h11l5 5v17a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2z" stroke="currentColor" strokeWidth="2"/><path d="M17 3v5h5M11 14h6M11 18h6M11 10h3" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>,
-              },
-            ].map((s) => (
-              <div key={s.step} className="card p-8 relative overflow-hidden">
-                <div className="text-7xl font-bold text-gray-100 absolute -top-2 -right-2 select-none">{s.step}</div>
-                <div className="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center mb-6 text-indigo-600">
-                  {s.icon}
+              { num: "01", title: "Input Topik & Fase", desc: "Masukkan topik pelajaran, fase, dan alokasi waktu. AI akan menyesuaikan dengan kurikulum." },
+              { num: "02", title: "AI Generate Konten", desc: "Dalam hitungan detik, AI membuat CP, TP, ATP, kegiatan pembelajaran, dan asesmen lengkap." },
+              { num: "03", title: "Edit & Export PDF", desc: "Review hasilnya, lalu download modul ajar dalam format PDF siap pakai." },
+            ].map((step, i) => (
+              <div key={i} style={{
+                background: "#fff",
+                borderRadius: "14px",
+                padding: "28px 24px",
+                border: "1px solid #e5e7eb",
+                boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+              }}>
+                <div style={{
+                  width: "40px", height: "40px",
+                  background: "#111827",
+                  color: "#fff",
+                  borderRadius: "10px",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: "13px", fontWeight: 700,
+                  marginBottom: "16px",
+                }}>
+                  {step.num}
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-3 relative">{s.title}</h3>
-                <p className="text-gray-500 leading-relaxed relative">{s.desc}</p>
+                <h3 style={{ fontSize: "17px", fontWeight: 700, color: "#111827", marginBottom: "8px" }}>{step.title}</h3>
+                <p style={{ fontSize: "14px", color: "#6b7280", lineHeight: 1.6 }}>{step.desc}</p>
               </div>
             ))}
           </div>
@@ -174,202 +261,337 @@ export default function HomePage() {
       </section>
 
       {/* ── Fitur ───────────────────────────────────────────── */}
-      <section id="fitur" className="py-24">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <div className="badge badge-primary mb-4">Fitur</div>
-            <h2 className="text-4xl font-bold text-gray-900 tracking-tight mb-4">Semua yang Guru Butuhkan</h2>
-            <p className="text-gray-500 text-lg max-w-md mx-auto">Dari generate sampai export — dalam satu platform.</p>
+      <section id="fitur" style={{ padding: "80px 0" }}>
+        <div className="container">
+          <div style={{ textAlign: "center", marginBottom: "56px" }}>
+            <h2 style={{ fontSize: "clamp(28px, 4vw, 40px)", fontWeight: 800, color: "#111827", letterSpacing: "-0.02em", marginBottom: "12px" }}>
+              Fitur Lengkap
+            </h2>
+            <p style={{ fontSize: "17px", color: "#6b7280", maxWidth: "480px", margin: "0 auto" }}>
+              Semua yang Anda butuhkan untuk membuat modul ajar profesional
+            </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+            gap: "16px",
+          }}>
             {[
-              { icon: "⚡", title: "Generate dalam 60 Detik", desc: "CP, Tujuan Pembelajaran, ATP, dan Asesmen dibuat otomatis.", color: "bg-amber-50 text-amber-600" },
-              { icon: "📋", title: "Sesuai Kurikulum Merdeka", desc: "Output sesuai format BS KAP dengan 11 sections lengkap.", color: "bg-green-50 text-green-600" },
-              { icon: "📄", title: "Export PDF A4", desc: "Download modul sebagai PDF siap cetak dalam format resmi.", color: "bg-blue-50 text-blue-600" },
-              { icon: "🎯", title: "Diferensiasi Otomatis", desc: "AI membuat 3 versi kegiatan untuk Visual, Auditori, dan Kinestetik.", color: "bg-purple-50 text-purple-600" },
-              { icon: "🔄", title: "Perbaharui Otomatis", desc: "Ketika BS KAP perbarui CP, modul ditandai perlu review dan bisa di-migrate.", color: "bg-cyan-50 text-cyan-600" },
-              { icon: "💳", title: "Berbayar Mulai Rp 49rb", desc: "Plan Free 2 modul/bulan. Plan Go Rp 49.000 — 10 modul + PDF tanpa watermark.", color: "bg-emerald-50 text-emerald-600" },
-            ].map((f) => (
-              <div key={f.title} className="card card-hover p-6">
-                <div className={`w-12 h-12 ${f.color.split(" ")[0]} rounded-xl flex items-center justify-center mb-4 text-2xl`}>
-                  {f.icon}
-                </div>
-                <h3 className="font-semibold text-gray-900 mb-2">{f.title}</h3>
-                <p className="text-sm text-gray-500 leading-relaxed">{f.desc}</p>
+              { icon: "📋", title: "CP & TP Otomatis", desc: "Capaian dan Tujuan Pembelajaran di-generate sesuai fase dan topik." },
+              { icon: "📊", title: "Alur TP Terstruktur", desc: "Alur Tujuan Pembelajaran dengan pendekatan yang logis dan sistematis." },
+              { icon: "🎯", title: "Kegiatan Berbasis CP", desc: "Kegiatan pembelajaran yang selaras dengan Capaian Pembelajaran." },
+              { icon: "📝", title: "Asesmen Lengkap", desc: "Instrumen asesmen diagnostik, formatif, dan sumatif." },
+              { icon: "🎨", title: "Model Pembelajaran", desc: "Problem Based Learning, Project Based Learning, dan lainnya." },
+              { icon: "⚙️", title: "Sesuai BS KAP", desc: "Format mengikuti Buku Sumber Capaian Pembelajaran resmi." },
+            ].map((f, i) => (
+              <div key={i} style={{
+                background: "#fff",
+                borderRadius: "14px",
+                padding: "24px",
+                border: "1px solid #e5e7eb",
+                boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+                transition: "box-shadow 0.2s ease",
+              }}>
+                <div style={{ fontSize: "28px", marginBottom: "12px" }}>{f.icon}</div>
+                <h3 style={{ fontSize: "15px", fontWeight: 700, color: "#111827", marginBottom: "6px" }}>{f.title}</h3>
+                <p style={{ fontSize: "14px", color: "#6b7280", lineHeight: 1.55 }}>{f.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── Coming Soon ─────────────────────────────────────── */}
-      <section className="py-24 bg-[#1e1b4b]">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="text-center mb-14">
-            <div className="inline-flex items-center gap-2 bg-indigo-900 text-indigo-300 text-sm font-medium px-4 py-1.5 rounded-full mb-5 border border-indigo-700">
-              <span className="w-2 h-2 bg-indigo-400 rounded-full animate-pulse"></span>
-              Sedang dalam pengembangan
-            </div>
-            <h2 className="text-4xl font-bold text-white tracking-tight mb-4">Yang Akan Datang</h2>
-            <p className="text-indigo-300 text-lg max-w-md mx-auto">Fitur yang sedang kami kembangkan.</p>
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {[
-              { icon: "📓", title: "Jurnal Mengajar", desc: "Catat kegiatan belajar harian otomatis dari modul." },
-              { icon: "📊", title: "Input Nilai", desc: "Input dan rekap nilai formatif & sumatif per siswa." },
-              { icon: "📦", title: "Bukti PMM ZIP", desc: "Ekspor paket bukti kinerja siap upload ke PMM." },
-              { icon: "🏫", title: "Plan Sekolah", desc: "Dashboard kepala sekolah + invoice BOS resmi." },
-            ].map((item) => (
-              <div key={item.title} className="bg-indigo-900/50 border border-indigo-800/60 rounded-2xl p-6">
-                <div className="text-3xl mb-3">{item.icon}</div>
-                <h3 className="font-semibold text-white mb-1">{item.title}</h3>
-                <p className="text-indigo-300 text-sm leading-relaxed">{item.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Pricing ──────────────────────────────────────────── */}
-      <section className="py-24 bg-gray-50">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="text-center mb-14">
-            <div className="badge badge-primary mb-4">Harga</div>
-            <h2 className="text-4xl font-bold text-gray-900 tracking-tight mb-4">Paket Berlangganan</h2>
-            <p className="text-gray-500 text-lg">Mulai gratis — upgrade kapan saja</p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            {[
-              {
-                name: "Free", price: "Rp 0", period: "/bulan",
-                color: "text-gray-600", border: "border-gray-200",
-                desc: "Untuk coba-coba",
-                items: ["2 modul Full AI/bulan","Preview modul","Scratch editor","Community support"],
-                cta: "Daftar Gratis", ctaClass: "btn btn-outline w-full", highlight: false,
-              },
-              {
-                name: "Go", price: "Rp 49.000", period: "/bulan",
-                color: "text-indigo-600", border: "border-indigo-300",
-                desc: "Untuk guru aktif",
-                items: ["10 modul Full AI/bulan","Download PDF tanpa watermark","Jurnal & absensi","Input nilai per TP","Top-up Rp 5.000/modul"],
-                cta: "Pilih Go", ctaClass: "btn btn-primary w-full shadow-md", highlight: true, badge: "Populer",
-              },
-              {
-                name: "Plus", price: "Rp 99.000", period: "/bulan",
-                color: "text-amber-600", border: "border-amber-200",
-                desc: "Untuk guru profesional",
-                items: ["20 modul Full AI/bulan","Prota & Promes AI","Bank Soal AI","Deskripsi Nilai AI","Paket Bukti PMM ZIP"],
-                cta: "Pilih Plus", ctaClass: "btn btn-outline w-full", highlight: false,
-              },
-            ].map((plan) => (
-              <div key={plan.name} className={`card p-8 relative ${plan.highlight ? "ring-2 ring-indigo-500 ring-offset-4" : ""}`}>
-                {plan.badge && (
-                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-indigo-600 text-white text-xs font-semibold px-4 py-1 rounded-full shadow-sm">
-                    {plan.badge}
-                  </div>
-                )}
-                <div className={`font-bold text-lg mb-1 ${plan.color}`}>{plan.name}</div>
-                <div className="text-4xl font-bold text-gray-900 mb-1">{plan.price}</div>
-                <div className="text-sm text-gray-400 mb-5">{plan.period}</div>
-                <p className="text-sm text-gray-500 mb-6">{plan.desc}</p>
-                <ul className="space-y-3 mb-8">
-                  {plan.items.map((item) => (
-                    <li key={item} className="flex items-start gap-2.5 text-sm text-gray-600">
-                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="mt-0.5 flex-shrink-0">
-                        <circle cx="8" cy="8" r="7" fill="#ecfdf5" stroke="#059669" strokeWidth="1.5"/>
-                        <path d="M5 8l2 2 4-4" stroke="#059669" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-                <Link href="/register" className={plan.ctaClass}>{plan.cta}</Link>
-              </div>
-            ))}
-          </div>
-          <p className="text-center text-sm text-gray-400 mt-8">
-            <Link href="/pricing" className="text-indigo-600 hover:underline">Lihat perbandingan lengkap fitur →</Link>
+      {/* ── Coming Soon ────────────────────────────────────── */}
+      <section style={{
+        padding: "56px 0",
+        background: "#111827",
+      }}>
+        <div className="container" style={{ textAlign: "center" }}>
+          <p style={{
+            display: "inline-block",
+            fontSize: "12px", fontWeight: 600,
+            color: "#9ca3af", letterSpacing: "0.08em", textTransform: "uppercase",
+            marginBottom: "12px",
+          }}>
+            Coming Soon
+          </p>
+          <h2 style={{ fontSize: "clamp(24px, 3.5vw, 36px)", fontWeight: 800, color: "#fff", marginBottom: "12px" }}>
+            Fitur yang akan datang
+          </h2>
+          <p style={{ fontSize: "16px", color: "#6b7280", maxWidth: "480px", margin: "0 auto" }}>
+            Bank Soal AI, Template RPP, Modul Ajar Berbagi, dan Integrasi LMS sekolah
           </p>
         </div>
       </section>
 
-      {/* ── FAQ ─────────────────────────────────────────────── */}
-      <section className="py-24">
-        <div className="max-w-3xl mx-auto px-6">
-          <div className="text-center mb-14">
-            <div className="badge badge-primary mb-4">FAQ</div>
-            <h2 className="text-4xl font-bold text-gray-900 tracking-tight">Pertanyaan Umum</h2>
+      {/* ── Pricing ─────────────────────────────────────────── */}
+      <section style={{ padding: "80px 0" }}>
+        <div className="container">
+          <div style={{ textAlign: "center", marginBottom: "56px" }}>
+            <h2 style={{ fontSize: "clamp(28px, 4vw, 40px)", fontWeight: 800, color: "#111827", letterSpacing: "-0.02em", marginBottom: "12px" }}>
+              Harga Terjangkau
+            </h2>
+            <p style={{ fontSize: "17px", color: "#6b7280", maxWidth: "480px", margin: "0 auto" }}>
+              Mulai gratis, upgrade kapan saja
+            </p>
           </div>
-          <div className="space-y-4">
+
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+            gap: "20px",
+            maxWidth: "900px",
+            margin: "0 auto",
+          }}>
+            {/* Free */}
+            <div style={{
+              background: "#fff",
+              borderRadius: "14px",
+              padding: "28px 24px",
+              border: "1px solid #e5e7eb",
+              boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+            }}>
+              <h3 style={{ fontSize: "16px", fontWeight: 700, color: "#111827", marginBottom: "4px" }}>Gratis</h3>
+              <div style={{ marginBottom: "20px" }}>
+                <span style={{ fontSize: "36px", fontWeight: 800, color: "#111827" }}>Rp 0</span>
+                <span style={{ fontSize: "14px", color: "#9ca3af" }}>/bulan</span>
+              </div>
+              <ul style={{ listStyle: "none", padding: 0, marginBottom: "24px" }}>
+                {["2 modul/bulan", "Export PDF", "Format BS KAP"].map((f) => (
+                  <li key={f} style={{ display: "flex", alignItems: "flex-start", gap: "8px", marginBottom: "10px" }}>
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="#22c55e" style={{ flexShrink: 0, marginTop: "1px" }}>
+                      <path fillRule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z" clipRule="evenodd"/>
+                    </svg>
+                    <span style={{ fontSize: "13px", color: "#6b7280" }}>{f}</span>
+                  </li>
+                ))}
+              </ul>
+              <Link href="/register" style={{
+                display: "block", textAlign: "center",
+                padding: "10px",
+                background: "#f9fafb", color: "#111827",
+                fontSize: "14px", fontWeight: 600,
+                borderRadius: "8px", border: "1px solid #e5e7eb",
+              }}>
+                Mulai Gratis
+              </Link>
+            </div>
+
+            {/* Pro */}
+            <div style={{
+              background: "#fff",
+              borderRadius: "14px",
+              padding: "28px 24px",
+              border: "2px solid #111827",
+              boxShadow: "0 4px 16px rgba(0,0,0,0.08)",
+              position: "relative",
+            }}>
+              <div style={{
+                position: "absolute", top: "-12px", left: "50%", transform: "translateX(-50%)",
+                padding: "4px 12px",
+                background: "#111827", color: "#fff",
+                fontSize: "11px", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase",
+                borderRadius: "9999px",
+              }}>
+                Populer
+              </div>
+              <h3 style={{ fontSize: "16px", fontWeight: 700, color: "#111827", marginBottom: "4px" }}>Pro</h3>
+              <div style={{ marginBottom: "20px" }}>
+                <span style={{ fontSize: "36px", fontWeight: 800, color: "#111827" }}>Rp 49k</span>
+                <span style={{ fontSize: "14px", color: "#9ca3af" }}>/bulan</span>
+              </div>
+              <ul style={{ listStyle: "none", padding: 0, marginBottom: "24px" }}>
+                {["20 modul/bulan", "Semua fitur Gratis", "Prioritas support", "Template premium"].map((f) => (
+                  <li key={f} style={{ display: "flex", alignItems: "flex-start", gap: "8px", marginBottom: "10px" }}>
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="#22c55e" style={{ flexShrink: 0, marginTop: "1px" }}>
+                      <path fillRule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z" clipRule="evenodd"/>
+                    </svg>
+                    <span style={{ fontSize: "13px", color: "#6b7280" }}>{f}</span>
+                  </li>
+                ))}
+              </ul>
+              <Link href="/register?plan=pro" style={{
+                display: "block", textAlign: "center",
+                padding: "10px",
+                background: "#111827", color: "#fff",
+                fontSize: "14px", fontWeight: 600,
+                borderRadius: "8px",
+              }}>
+                Pilih Pro
+              </Link>
+            </div>
+
+            {/* School */}
+            <div style={{
+              background: "#fff",
+              borderRadius: "14px",
+              padding: "28px 24px",
+              border: "1px solid #e5e7eb",
+              boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+            }}>
+              <h3 style={{ fontSize: "16px", fontWeight: 700, color: "#111827", marginBottom: "4px" }}>Sekolah</h3>
+              <div style={{ marginBottom: "20px" }}>
+                <span style={{ fontSize: "36px", fontWeight: 800, color: "#111827" }}>Custom</span>
+              </div>
+              <ul style={{ listStyle: "none", padding: 0, marginBottom: "24px" }}>
+                {["Unlimited modul", "Multi-user", "Integrasi LMS"].map((f) => (
+                  <li key={f} style={{ display: "flex", alignItems: "flex-start", gap: "8px", marginBottom: "10px" }}>
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="#22c55e" style={{ flexShrink: 0, marginTop: "1px" }}>
+                      <path fillRule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z" clipRule="evenodd"/>
+                    </svg>
+                    <span style={{ fontSize: "13px", color: "#6b7280" }}>{f}</span>
+                  </li>
+                ))}
+              </ul>
+              <Link href="/contact" style={{
+                display: "block", textAlign: "center",
+                padding: "10px",
+                background: "#f9fafb", color: "#111827",
+                fontSize: "14px", fontWeight: 600,
+                borderRadius: "8px", border: "1px solid #e5e7eb",
+              }}>
+                Hubungi Kami
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── FAQ ────────────────────────────────────────────── */}
+      <section style={{ padding: "80px 0", background: "#fafafa" }}>
+        <div className="container" style={{ maxWidth: "680px" }}>
+          <h2 style={{
+            fontSize: "clamp(28px, 4vw, 40px)", fontWeight: 800, color: "#111827",
+            letterSpacing: "-0.02em", textAlign: "center", marginBottom: "48px",
+          }}>
+            Pertanyaan Umum
+          </h2>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
             {[
-              { q: "Apakah gratis?", a: "Plan Free memberikan 2 modul/bulan gratis tanpa perlu bayar. Tidak butuh kartu kredit." },
-              { q: "Berapa biaya langganan?", a: "Plan Go mulai Rp 49.000/bulan untuk 10 modul Full AI. Plan Plus Rp 99.000/bulan." },
-              { q: "Apakah modul hasil AI akurat?", a: "AI menghasilkan draft yang harus direview guru. Hasil tidak dijamin 100% akurat." },
-              { q: "Bisa offline?", a: "Fitur dasar bisa offline lewat PWA. Generate AI butuh koneksi internet." },
-              { q: "Bagaimana dengan data saya?", a: "Semua data disimpan di Supabase (AWS Singapore). Tidak dijual. Baca Kebijakan Privasi." },
-            ].map((faq, i) => (
-              <details key={i} className="card group p-0 cursor-pointer">
-                <summary className="flex items-center justify-between gap-4 p-6 list-none select-none">
-                  <span className="font-medium text-gray-900 group-hover:text-indigo-600 transition-colors">{faq.q}</span>
-                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none" className="flex-shrink-0 text-gray-400 group-open:rotate-180 transition-transform duration-200">
-                    <path d="M4.5 6.75l4.5 4.5 4.5-4.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+              { q: "Apakah Modulajar gratis?", a: "Ya, Anda bisa membuat 2 modul/bulan secara gratis. Untuk kebutuhan lebih banyak, upgrade ke paket Pro." },
+              { q: "Apakah sesuai BS KAP?", a: "Ya, semua modul ajar di-generate mengikuti format Buku Sumber Capaian Pembelajaran (BS KAP) resmi." },
+              { q: "Berapa lama membuat modul?", a: "Rata-rata 60 detik untuk modul lengkap (CP, TP, ATP, Kegiatan, Asesmen)." },
+              { q: "Bisa edit hasilnya?", a: "Tentu saja. Hasil AI bisa diedit langsung sebelum didownload sebagai PDF." },
+            ].map((item, i) => (
+              <details key={i} style={{
+                background: "#fff",
+                borderRadius: "12px",
+                border: "1px solid #e5e7eb",
+                overflow: "hidden",
+              }}>
+                <summary style={{
+                  display: "flex", alignItems: "center", justifyContent: "space-between",
+                  padding: "18px 20px",
+                  cursor: "pointer",
+                  fontSize: "15px", fontWeight: 600, color: "#111827",
+                  listStyle: "none",
+                }}>
+                  {item.q}
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ color: "#9ca3af", flexShrink: 0 }}>
+                    <path stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" d="M4 6l4 4 4-4"/>
                   </svg>
                 </summary>
-                <div className="px-6 pb-6 text-gray-500 leading-relaxed border-t border-gray-100 pt-4">{faq.a}</div>
+                <div style={{ padding: "0 20px 18px", fontSize: "14px", color: "#6b7280", lineHeight: 1.65 }}>
+                  {item.a}
+                </div>
               </details>
             ))}
           </div>
-          <p className="text-center text-gray-500 mt-8">
-            Ada pertanyaan lain?{" "}
-            <a href="mailto:hello@modulajar.app" className="text-indigo-600 hover:underline font-medium">Hubungi kami</a>
-          </p>
         </div>
       </section>
 
-      {/* ── Footer ─────────────────────────────────────────── */}
-      <footer className="border-t border-gray-100 py-16 bg-gray-50">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-10 mb-12">
+      {/* ── CTA Band ────────────────────────────────────────── */}
+      <section style={{
+        padding: "72px 0",
+        background: "linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)",
+      }}>
+        <div className="container" style={{ textAlign: "center" }}>
+          <h2 style={{
+            fontSize: "clamp(26px, 4vw, 38px)", fontWeight: 800,
+            color: "#fff", letterSpacing: "-0.02em",
+            marginBottom: "16px",
+          }}>
+            Siap membuat modul ajar pertama Anda?
+          </h2>
+          <p style={{ fontSize: "17px", color: "rgba(255,255,255,0.6)", marginBottom: "32px" }}>
+            Gratis 2 modul/bulan. Tanpa kartu kredit.
+          </p>
+          <Link href="/register" style={{
+            display: "inline-flex", alignItems: "center", gap: "8px",
+            padding: "14px 28px",
+            background: "#fff", color: "#111827",
+            fontSize: "15px", fontWeight: 700,
+            borderRadius: "10px",
+          }}>
+            Daftar Gratis Sekarang
+          </Link>
+        </div>
+      </section>
+
+      {/* ── Footer ──────────────────────────────────────────── */}
+      <footer style={{ padding: "48px 0", background: "#fafafa", borderTop: "1px solid #e5e7eb" }}>
+        <div className="container">
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
+            gap: "40px",
+            marginBottom: "40px",
+          }}>
+            {/* Brand col */}
             <div>
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
-                  <svg width="14" height="14" viewBox="0 0 18 18" fill="none"><path d="M3 3h5v5H3zM10 3h5v5h-5zM3 10h5v5H3zM13 12l3 3M16 12l-3 3" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px" }}>
+                <div style={{
+                  width: "28px", height: "28px",
+                  background: "linear-gradient(135deg, #4f46e5, #4338ca)",
+                  borderRadius: "7px",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                }}>
+                  <svg width="13" height="13" viewBox="0 0 18 18" fill="none">
+                    <path d="M3 3h5v5H3zM10 3h5v5h-5zM3 10h5v5H3zM13 12l3 3M16 12l-3 3" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
                 </div>
-                <span className="font-bold text-gray-900">Modulajar</span>
+                <span style={{ fontWeight: 700, fontSize: "14px", color: "#111827" }}>Modulajar</span>
               </div>
-              <p className="text-sm text-gray-400 leading-relaxed">Platform AI untuk guru Indonesia.</p>
+              <p style={{ fontSize: "13px", color: "#9ca3af", lineHeight: 1.6 }}>
+                Platform AI untuk guru Indonesia. Buat modul ajar Kurikulum Merdeka dalam hitungan detik.
+              </p>
             </div>
+
+            {/* Links */}
             <div>
-              <div className="font-semibold text-gray-700 text-sm mb-4">Produk</div>
-              <ul className="space-y-2.5 text-sm text-gray-500">
-                <li><Link href="/#fitur" className="hover:text-gray-900 transition-colors">Fitur</Link></li>
-                <li><Link href="/pricing" className="hover:text-gray-900 transition-colors">Harga</Link></li>
-                <li><Link href="/register" className="hover:text-gray-900 transition-colors">Daftar Gratis</Link></li>
+              <h4 style={{ fontSize: "13px", fontWeight: 700, color: "#374151", marginBottom: "12px" }}>Produk</h4>
+              <ul style={{ listStyle: "none", padding: 0 }}>
+                {["Fitur", "Harga", "Blog"].map((link) => (
+                  <li key={link} style={{ marginBottom: "8px" }}>
+                    <Link href={link === "Fitur" ? "/#fitur" : link === "Harga" ? "/pricing" : "/blog/cara-buat-modul-ajar"} style={{ fontSize: "13px", color: "#6b7280" }}>{link}</Link>
+                  </li>
+                ))}
               </ul>
             </div>
+
             <div>
-              <div className="font-semibold text-gray-700 text-sm mb-4">Bantuan</div>
-              <ul className="space-y-2.5 text-sm text-gray-500">
-                <li><Link href="/help" className="hover:text-gray-900 transition-colors">Pusat Bantuan</Link></li>
-                <li><Link href="/blog/cara-buat-modul-ajar" className="hover:text-gray-900 transition-colors">Blog</Link></li>
-                <li><a href="mailto:hello@modulajar.app" className="hover:text-gray-900 transition-colors">hello@modulajar.app</a></li>
-              </ul>
-            </div>
-            <div>
-              <div className="font-semibold text-gray-700 text-sm mb-4">Legal</div>
-              <ul className="space-y-2.5 text-sm text-gray-500">
-                <li><Link href="/terms" className="hover:text-gray-900 transition-colors">Syarat Layanan</Link></li>
-                <li><Link href="/privacy" className="hover:text-gray-900 transition-colors">Kebijakan Privasi</Link></li>
-                <li><Link href="/cookies" className="hover:text-gray-900 transition-colors">Cookie</Link></li>
-                <li><Link href="/refund" className="hover:text-gray-900 transition-colors">Refund</Link></li>
+              <h4 style={{ fontSize: "13px", fontWeight: 700, color: "#374151", marginBottom: "12px" }}>Legal</h4>
+              <ul style={{ listStyle: "none", padding: 0 }}>
+                {[["Privasi", "/privacy"], ["Syarat", "/terms"], ["Cookie", "/cookies"], ["Refund", "/refund"]].map(([label, href]) => (
+                  <li key={label} style={{ marginBottom: "8px" }}>
+                    <Link href={href} style={{ fontSize: "13px", color: "#6b7280" }}>{label}</Link>
+                  </li>
+                ))}
               </ul>
             </div>
           </div>
-          <div className="border-t border-gray-200 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-sm text-gray-400">© 2026 CV. Artesis Sinar Endah Perdana</p>
-            <p className="text-xs text-gray-400">Built with ❤️ for Indonesian teachers</p>
+
+          <div style={{
+            paddingTop: "24px",
+            borderTop: "1px solid #e5e7eb",
+            display: "flex", justifyContent: "space-between", alignItems: "center",
+            flexWrap: "wrap", gap: "12px",
+          }}>
+            <p style={{ fontSize: "13px", color: "#9ca3af" }}>
+              © {new Date().getFullYear()} Modulajar. CV. Artesis Sinar Endah Perdana.
+            </p>
           </div>
         </div>
       </footer>
