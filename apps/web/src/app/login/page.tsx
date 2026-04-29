@@ -64,20 +64,28 @@ function LoginForm() {
   }
 
   return (
-    <>
+    <div className="w-full max-w-sm">
       {/* Logo */}
       <div className="text-center mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Modulajar</h1>
-        <p className="text-gray-500 text-sm mt-1">
+        <Link href="/" className="inline-flex items-center gap-2.5 mb-5">
+          <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-sm shadow-indigo-200">
+            <svg width="20" height="20" viewBox="0 0 18 18" fill="none">
+              <path d="M3 3h5v5H3zM10 3h5v5h-5zM3 10h5v5H3zM13 12l3 3M16 12l-3 3" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
+          <span className="font-bold text-gray-900 text-xl tracking-tight">Modulajar</span>
+        </Link>
+        <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Masuk</h1>
+        <p className="text-gray-500 text-sm mt-1.5">
           Buat Modul Ajar Kurikulum Merdeka dalam menit
         </p>
       </div>
 
-      {/* Google SSO — primary CTA */}
+      {/* Google SSO */}
       <button
         onClick={handleGoogleLogin}
         disabled={loading}
-        className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 rounded-xl font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
+        className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-200 rounded-xl font-medium text-gray-700 bg-white hover:bg-gray-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-xs"
       >
         <svg width="18" height="18" viewBox="0 0 18 18">
           <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/>
@@ -88,86 +96,94 @@ function LoginForm() {
         Masuk dengan Google
       </button>
 
-      <div className="relative my-6">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-gray-200" />
-        </div>
-        <div className="relative flex justify-center text-sm">
-          <span className="px-3 bg-white text-gray-400">atau</span>
-        </div>
+      {/* Divider */}
+      <div className="divider my-6">
+        <span>atau</span>
       </div>
 
       {/* Email/Password form */}
       <form onSubmit={handleEmailLogin} className="space-y-4">
         {confirmed && (
-          <div className="p-3 bg-green-50 text-green-700 text-sm rounded-xl border border-green-200">
-            ✓ Password berhasil direset. Silakan login dengan password baru Anda.
+          <div className="alert alert-success">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="flex-shrink-0 mt-0.5">
+              <path d="M13.5 4.5L6 12L2.5 8.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            <span>Password berhasil direset. Silakan login dengan password baru Anda.</span>
           </div>
         )}
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Email
-          </label>
+          <label htmlFor="login-email" className="form-label">Email</label>
           <input
+            id="login-email"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            className="input"
             placeholder="bu.guru@sekolah.sch.id"
           />
         </div>
+
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Password
-          </label>
+          <label htmlFor="login-password" className="form-label">Password</label>
           <input
+            id="login-password"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-            placeholder="••••••••"
+            className="input"
+            placeholder="Masukkan password"
           />
         </div>
 
         {error && (
-          <div className="text-sm text-red-600 bg-red-50 px-4 py-2.5 rounded-xl">
-            {error}
+          <div className="alert alert-danger">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="flex-shrink-0">
+              <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.5"/>
+              <path d="M8 5v4M8 11v.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
+            <span>{error}</span>
           </div>
         )}
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-2.5 bg-indigo-600 text-white rounded-xl font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50"
+          className="btn btn-primary w-full py-3 mt-2"
         >
           {loading ? "Memproses..." : "Masuk"}
         </button>
       </form>
 
-      <div className="mt-4 text-center">
-        <Link href="/forgot-password" className="text-sm text-indigo-600 hover:underline">
+      <div className="text-center mt-4">
+        <Link href="/forgot-password" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">
           Lupa password?
         </Link>
       </div>
 
-      <p className="text-center text-sm text-gray-500 mt-6">
+      <p className="text-center text-sm text-gray-500 mt-8">
         Belum punya akun?{" "}
-        <Link href="/register" className="text-indigo-600 font-medium hover:underline">
+        <Link href="/register" className="text-indigo-600 font-medium hover:text-indigo-700 transition-colors">
           Daftar di sini
         </Link>
       </p>
-    </>
+    </div>
   );
 }
 
 export default function LoginPage() {
   return (
     <main className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
-        <Suspense fallback={<div className="text-center text-gray-500">Memuat...</div>}>
+      {/* Background decoration */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-indigo-50 rounded-full opacity-50 blur-3xl" />
+        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-purple-50 rounded-full opacity-50 blur-3xl" />
+      </div>
+
+      <div className="auth-card relative">
+        <Suspense fallback={<div className="text-center text-gray-500 py-8">Memuat...</div>}>
           <LoginForm />
         </Suspense>
       </div>
