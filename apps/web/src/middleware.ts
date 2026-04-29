@@ -1,12 +1,29 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-// Routes that require authentication
-const PROTECTED_ROUTES = ["/dashboard", "/modules", "/settings", "/admin"];
+const PROTECTED_ROUTES = ["/dashboard", "/modules", "/settings"];
 const AUTH_ROUTES = ["/login", "/register", "/onboarding"];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const hostname = request.headers.get("host") ?? "";
+
+  // Subdomain routing
+  const isAppSubdomain = hostname.startsWith("app.");
+
+  // If accessing root domain without www → redirect to www
+  if (hostname === "modulajar.app") {
+    const url = request.nextUrl.clone();
+    url.hostname = "www.modulajar.app";
+    return NextResponse.redirect(url);
+  }
+
+  // App subdomain: redirect / to /dashboard if not auth'd
+  if (isAppSubdomain && pathname === "/") {
+    const url = request.nextUrl.clone();
+    url.pathname = "/login";
+    return NextResponse.redirect(url);
+  }
 
   let user: { id: string } | null = null;
 
@@ -30,14 +47,12 @@ export async function middleware(request: NextRequest) {
         });
 
         if (!sessionError) {
-          const {
-            data: { user: authUser },
-          } = await supabase.auth.getUser();
+          const { data: { user: authUser } } = await supabase.auth.getUser();
           user = authUser;
         }
       }
 
-      // Admin route — check super_admin role
+      // Admin route check
       if (user && pathname.startsWith("/admin")) {
         const { data: profile } = await supabase
           .from("users")
@@ -54,7 +69,6 @@ export async function middleware(request: NextRequest) {
     console.warn("[middleware] Auth check failed:", err);
   }
 
-  // Redirect unauthenticated users away from protected routes
   const isProtected = PROTECTED_ROUTES.some((route) => pathname.startsWith(route));
   const isAuthRoute = AUTH_ROUTES.some((route) => pathname.startsWith(route));
 
