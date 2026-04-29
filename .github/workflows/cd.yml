@@ -129,3 +129,5 @@ jobs:
           API_URL: ${{ vars.STAGING_API_URL }}
         run: |
           bun run packages/db/src/regression.test.ts
+
+# ── Marketing deploy trigger (module ajar app) ─────────────────
