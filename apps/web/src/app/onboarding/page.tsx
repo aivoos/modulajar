@@ -11,8 +11,8 @@ export default function OnboardingPage() {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [schoolName, setSchoolName] = useState("");
-  const [subjects, setSubjects] = useState<string[]>([]);
-  const [fase, setFase] = useState<string>("");
+  const [subject, setSubject] = useState("");
+  const [phase, setPhase] = useState("");
 
   const MAPEL = [
     "Bahasa Indonesia", "Matematika", "IPA", "IPS",
@@ -21,24 +21,27 @@ export default function OnboardingPage() {
   ];
   const FASES = ["A", "B", "C", "D", "E", "F"];
 
-  function toggleSubject(mapel: string) {
-    setSubjects((prev) =>
-      prev.includes(mapel)
-        ? prev.filter((s) => s !== mapel)
-        : [...prev, mapel]
-    );
-  }
-
   async function handleFinish() {
     setLoading(true);
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return router.push("/login");
+    if (!user) {
+      router.push("/login");
+      return;
+    }
 
-    // Update user profile
-    await supabase
+    // Update user profile with onboarding data
+    const { error } = await supabase
       .from("users")
-      .update({ subjects, default_fase: fase })
+      .update({
+        default_subject: subject || null,
+        default_phase: (phase ? (phase as "A" | "B" | "C" | "D" | "E" | "F") : null),
+        onboarding_done: true,
+      })
       .eq("id", user.id);
+
+    if (error) {
+      console.error("Onboarding save error:", error);
+    }
 
     router.push("/dashboard");
     router.refresh();
@@ -50,7 +53,12 @@ export default function OnboardingPage() {
         <div className="mb-8">
           <div className="flex items-center justify-between text-sm text-gray-400 mb-2">
             <span>Step {step} of 3</span>
-            <span>Skip for now</span>
+            <button
+              onClick={() => router.push("/dashboard")}
+              className="text-indigo-600 hover:underline"
+            >
+              Lewati
+            </button>
           </div>
           <div className="w-full bg-gray-100 rounded-full h-2">
             <div
@@ -64,6 +72,9 @@ export default function OnboardingPage() {
 
         {step === 1 && (
           <div className="space-y-4">
+            <p className="text-sm text-gray-500 mb-2">
+              Nama sekolah membantu kami menyesuaikan modul ajar dengan kurikulum yang berlaku.
+            </p>
             <input
               type="text"
               value={schoolName}
@@ -82,14 +93,14 @@ export default function OnboardingPage() {
 
         {step === 2 && (
           <div className="space-y-4">
-            <p className="text-sm text-gray-500 mb-4">Pilih semua mata pelajaran yang diajar:</p>
+            <p className="text-sm text-gray-500 mb-4">Pilih mata pelajaran utama yang Anda ajar:</p>
             <div className="grid grid-cols-2 gap-2">
               {MAPEL.map((mapel) => (
                 <button
                   key={mapel}
-                  onClick={() => toggleSubject(mapel)}
-                  className={`px-4 py-2 rounded-xl border text-sm font-medium transition-all ${
-                    subjects.includes(mapel)
+                  onClick={() => setSubject(mapel)}
+                  className={`px-4 py-2.5 rounded-xl border text-sm font-medium transition-all ${
+                    subject === mapel
                       ? "bg-indigo-50 border-indigo-600 text-indigo-600"
                       : "bg-white border-gray-300 text-gray-700 hover:border-gray-400"
                   }`}
@@ -100,7 +111,8 @@ export default function OnboardingPage() {
             </div>
             <button
               onClick={() => setStep(3)}
-              className="w-full py-3 bg-indigo-600 text-white rounded-xl font-medium hover:bg-indigo-700 transition-colors"
+              disabled={!subject}
+              className="w-full py-3 bg-indigo-600 text-white rounded-xl font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50"
             >
               Lanjut
             </button>
@@ -109,14 +121,14 @@ export default function OnboardingPage() {
 
         {step === 3 && (
           <div className="space-y-4">
-            <p className="text-sm text-gray-500 mb-4">Fase kurikulum default:</p>
-            <div className="flex gap-2 flex-wrap">
+            <p className="text-sm text-gray-500 mb-4">Fase Kurikulum Merdeka default:</p>
+            <div className="flex gap-3 flex-wrap">
               {FASES.map((f) => (
                 <button
                   key={f}
-                  onClick={() => setFase(f)}
+                  onClick={() => setPhase(f)}
                   className={`w-14 h-14 rounded-xl border text-lg font-bold transition-all ${
-                    fase === f
+                    phase === f
                       ? "bg-indigo-50 border-indigo-600 text-indigo-600"
                       : "bg-white border-gray-300 text-gray-700 hover:border-gray-400"
                   }`}

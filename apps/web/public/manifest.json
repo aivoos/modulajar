@@ -1,0 +1,43 @@
+{
+  "name": "Modulajar",
+  "short_name": "Modulajar",
+  "description": "Buat modul ajar Kurikulum Merdeka dalam menit dengan AI",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4f46e5",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["education", "productivity"],
+  "lang": "id",
+  "dir": "ltr",
+  "prefer_related_applications": false,
+  "shortcuts": [
+    {
+      "name": "Buat Modul Ajar",
+      "short_name": "Modul Baru",
+      "url": "/modules/new",
+      "description": "Buat modul ajar baru dengan AI"
+    },
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "url": "/dashboard",
+      "description": "Lihat dashboard"
+    }
+  ]
+}

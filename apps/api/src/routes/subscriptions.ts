@@ -3,7 +3,7 @@ import { Elysia } from "elysia";
 import { createAdminClient } from "@modulajar/db";
 import { PLAN_LIMITS } from "@modulajar/shared";
 
-export const subscriptionRoutes = new Elysia({ prefix: "/api/subscriptions" })
+export const subscriptionRoutes = new Elysia({ prefix: "subscriptions" })
   .get("/me", async ({ request, set }) => {
     const userId = request.headers.get("X-User-ID");
     if (!userId) { set.status = 401; return { error: "unauthorized" }; }
@@ -24,9 +24,10 @@ export const subscriptionRoutes = new Elysia({ prefix: "/api/subscriptions" })
   })
   .get("/plans", () => ({
     plans: [
-      { id: "free", name: "Free", price_idr: 0, features: ["Buat & preview modul", "Scratch + AI Assist"], limitations: ["Tidak bisa download PDF", "Tidak bisa Full AI"] },
-      { id: "guru_pro", name: "Guru Pro", price_idr: PLAN_LIMITS.guru_pro.price_idr, features: ["10 modul Full AI/bulan", "Download PDF tanpa watermark", "Top-up Rp 5.000 = +3 modul"], limitations: [] },
-      { id: "sekolah", name: "Plan Sekolah", price_idr: PLAN_LIMITS.sekolah.price_idr, features: ["Unlimited AI", "Multi-guru dashboard", "Branding sekolah di PDF", "Invoice BOS resmi"], limitations: [] },
+      { id: "free",  name: "Free",   price_idr: 0,    features: ["Buat & preview modul", "Scratch + AI Assist"],    limitations: ["Tidak bisa download PDF", "Tidak bisa Full AI"] },
+      { id: "go",    name: "Go",     price_idr: PLAN_LIMITS.go.price_idr,     features: ["10 modul Full AI/bulan", "Jurnal & absensi", "Input nilai per TP", "Download PDF tanpa watermark", "Top-up Rp 5.000 = +3 modul"],    limitations: [] },
+      { id: "plus",  name: "Plus",   price_idr: PLAN_LIMITS.plus.price_idr,   features: ["Unlimited Full AI", "Prota & Promes", "Bank Soal AI", "Deskripsi Nilai AI", "Paket Bukti PMM ZIP"],      limitations: [] },
+      { id: "sekolah", name: "Sekolah", price_idr: PLAN_LIMITS.sekolah.base_price_idr, features: ["Semua fitur Plus", "Dashboard kepala sekolah", "Min 10 guru", "Invoice BOS resmi (NPWP)"], limitations: [] },
     ],
   }))
   .post("/upgrade", async ({ request, set }) => {
@@ -35,7 +36,9 @@ export const subscriptionRoutes = new Elysia({ prefix: "/api/subscriptions" })
 
     const body = await request.json() as Record<string, unknown>;
     const plan = body["plan"] as string;
-    if (!plan || !["guru_pro", "sekolah"].includes(plan)) { set.status = 400; return { error: "invalid_plan" }; }
+    if (!plan || !["go", "plus", "sekolah"].includes(plan)) { set.status = 400; return { error: "invalid_plan" }; }
 
-    return { status: "placeholder", message: "Xendit payment link generation in Phase 4", plan };
+    // Redirect to billing checkout
+    const billingCycle = (body["billing_cycle"] as string) ?? "monthly";
+    return { redirect: "/settings/billing", plan, billing_cycle: billingCycle };
   });

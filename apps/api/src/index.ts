@@ -49,14 +49,27 @@ const { webhookRoutes } = await import("./routes/webhooks");
 const { moduleRoutes } = await import("./routes/modules");
 const { subscriptionRoutes } = await import("./routes/subscriptions");
 const { libraryRoutes } = await import("./routes/library");
+const { sseRoutes } = await import("./routes/sse");
+const { pdfRoutes } = await import("./routes/pdf");
+const { billingRoutes } = await import("./routes/billing");
+const { invoiceRoutes } = await import("./routes/invoice");
+const { quotaResetCron, gracePeriodCron, quotaWarningCron, expiryCron } = await import("./routes/cron");
 
 app
   .use(authRoutes)
   .use(agentRoutes)
+  .use(sseRoutes)
   .use(webhookRoutes)
   .use(moduleRoutes)
   .use(subscriptionRoutes)
-  .use(libraryRoutes);
+  .use(libraryRoutes)
+  .use(pdfRoutes)
+  .use(billingRoutes)
+  .use(invoiceRoutes)
+  .use(quotaResetCron)
+  .use(gracePeriodCron)
+  .use(quotaWarningCron)
+  .use(expiryCron);
 
 const PORT = parseInt(process.env["PORT"] ?? "3000", 10);
 const HOST = process.env["HOST"] ?? "0.0.0.0";
@@ -67,6 +80,8 @@ app.listen({ port: PORT, hostname: HOST }, () => {
   console.log(`   Supabase: ${process.env["SUPABASE_URL"] ? "✓" : "✗"}`);
   console.log(`   Anthropic: ${process.env["ANTHROPIC_API_KEY"] ? "✓" : "✗"}`);
   console.log(`   Xendit: ${process.env["XENDIT_SECRET"] ? "✓" : "✗"}`);
+  console.log(`   Resend: ${process.env["RESEND_API_KEY"] ? "✓" : "✗"}`);
+  console.log(`   Cron routes: quota_reset, grace_period, quota_warning, expiry`);
 });
 
 export default app;

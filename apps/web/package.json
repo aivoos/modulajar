@@ -10,21 +10,23 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@modulajar/db": "workspace:*",
-    "@modulajar/shared": "workspace:*",
+    "@sentry/browser": "^10.50.0",
     "@supabase/supabase-js": "^2.47.10",
     "@tiptap/extension-placeholder": "^3.22.4",
     "@tiptap/extension-underline": "^3.22.4",
     "@tiptap/pm": "^3.22.4",
     "@tiptap/react": "^3.22.4",
     "@tiptap/starter-kit": "^3.22.4",
+    "@vercel/og": "^0.11.1",
     "next": "^15.1.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
+    "@ducanh2912/next-pwa": "^10.2.9",
     "@eslint/eslintrc": "^3.3.5",
     "@eslint/js": "^10.0.1",
+    "@sentry/nextjs": "^10.50.0",
     "@tailwindcss/postcss": "^4.2.4",
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
@@ -35,6 +37,7 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.1.1",
     "postcss": "^8.5.12",
+    "posthog-js": "^1.372.3",
     "tailwindcss": "^4.2.4",
     "typescript": "^5.7.2",
     "typescript-eslint": "^8.59.0"

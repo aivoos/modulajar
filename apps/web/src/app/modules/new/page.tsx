@@ -22,7 +22,7 @@ export default function NewModulePage() {
 
       if (sub) {
         setPlan(sub.plan);
-        const limit = sub.plan === "guru_pro" ? 10 : sub.plan === "sekolah" ? Infinity : 0;
+        const limit = sub.plan === "go" ? 10 : sub.plan === "plus" ? 20 : sub.plan === "sekolah" ? 25 : 0;
         setQuotaExhausted(sub.ai_quota_used >= limit);
       }
       setLoading(false);
@@ -51,7 +51,7 @@ export default function NewModulePage() {
       id: "full-ai",
       name: "Full AI",
       desc: "AI menghasilkan seluruh modul dari awal. Cocok untuk guru yang belum punya referensi.",
-      badge: isFree ? "Tersedia di Guru Pro" : "Pakai 1 slot AI",
+      badge: isFree ? "Tersedia di Go" : "Pakai 1 slot AI",
       badgeColor: "bg-indigo-100 text-indigo-700",
       locked: freeLocked,
       icon: "🤖",
@@ -121,7 +121,7 @@ export default function NewModulePage() {
                   href="/settings/billing"
                   className="text-sm text-indigo-600 font-medium hover:underline"
                 >
-                  Upgrade ke Guru Pro →
+                  Upgrade ke Go →
                 </Link>
               </div>
             )}

@@ -2,7 +2,7 @@
 import { Elysia } from "elysia";
 import { createAdminClient } from "@modulajar/db";
 
-export const authRoutes = new Elysia({ prefix: "/api/auth" })
+export const authRoutes = new Elysia({ prefix: "auth" })
   .get("/me", async ({ request, set }) => {
     const userId = request.headers.get("X-User-ID");
     if (!userId) {

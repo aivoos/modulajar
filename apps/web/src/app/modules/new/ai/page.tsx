@@ -9,10 +9,22 @@ const MAPEL = [
   "Pendidikan Agama", "PKn", "Bahasa Daerah",
 ];
 const FASES = ["A", "B", "C", "D", "E", "F"];
-const KELAS_MAP: Record<string, number[]> = {
-  A: [1, 2, 3], B: [4, 5, 6], C: [7, 8, 9], D: [10, 11, 12], E: [10, 11, 12], F: [11, 12],
+// Per DB schema: grade is text (e.g. "8"), fase A=1-3, B=4-6, C=7-9, D-F=10-12
+const KELAS_BY_FASE: Record<string, string[]> = {
+  A: ["1", "2", "3"],
+  B: ["4", "5", "6"],
+  C: ["7", "8", "9"],
+  D: ["10", "11", "12"],
+  E: ["10", "11", "12"],
+  F: ["11", "12"],
 };
-const DURATIONS = [1, 2, 4, 8, 12, 16];
+const DURASI_OPTIONS = [
+  { label: "2x35 menit", value: 70 },
+  { label: "2x40 menit", value: 80 },
+  { label: "3x40 menit", value: 120 },
+  { label: "4x40 menit", value: 160 },
+  { label: "Sesuai JP", value: 45 },
+];
 const LEARNING_STYLES = [
   { id: "visual", label: "Visual", desc: "Diagram, warna, peta konsep", icon: "👁️" },
   { id: "auditori", label: "Auditori", desc: "Diskusi, audio, musik", icon: "👂" },
@@ -22,20 +34,30 @@ const LEARNING_STYLES = [
 
 const STEPS = ["Info Dasar", "Topik & Durasi", "Gaya Belajar", "Ringkasan"];
 
+// Map step number to label
+const STEP_LABELS = [
+  "Membaca Capaian Pembelajaran...",
+  "Menulis Tujuan Pembelajaran (ABCD)...",
+  "Menyusun Alur Tujuan Pembelajaran...",
+  "Mendesain kegiatan pembelajaran...",
+  "Membuat instrumen asesmen...",
+  "Memvalidasi hasil...",
+];
+
 export default function AiWizardPage() {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
+  const [jobId, setJobId] = useState<string | null>(null);
 
   // Step 1
   const [mapel, setMapel] = useState("");
-  const [fase, setFase] = useState("C");
-  const [kelas, setKelas] = useState<number[]>([10]);
-  const [curriculumVersion, setCurriculumVersion] = useState("");
+  const [fase, setFase] = useState("D");
+  const [kelas, setKelas] = useState("10");
 
   // Step 2
   const [topik, setTopik] = useState("");
-  const [duration, setDuration] = useState(4);
+  const [durasi, setDurasi] = useState(80);
 
   // Step 3
   const [learningStyle, setLearningStyle] = useState("campuran");
@@ -43,61 +65,154 @@ export default function AiWizardPage() {
   // Step 4
   const [catatan, setCatatan] = useState("");
 
-  // Fetch curriculum versions
+  // Fetch active curriculum version on mount
+  const [curriculumVersionId, setCurriculumVersionId] = useState("");
+
   useEffect(() => {
     async function load() {
       const { data } = await supabase
         .from("curriculum_versions")
-        .select("id, name, kurikulum, status")
+        .select("id, name")
         .eq("status", "active")
-        .limit(5);
-      if (data?.[0]) {
-        setCurriculumVersion(data[0].id);
-        setMapel(data[0].kurikulum === "k13" ? "Matematika" : "Matematika");
-      }
+        .limit(1);
+      if (data?.[0]) setCurriculumVersionId(data[0].id);
     }
     load();
   }, []);
 
-  function toggleKelas(k: number) {
-    setKelas((prev) =>
-      prev.includes(k) ? prev.filter((x) => x !== k) : [...prev, k]
-    );
-  }
+  // ── SSE polling for real-time progress ──────────────────────────
+  const [progressStep, setProgressStep] = useState(-1); // -1 = not started
+
+  useEffect(() => {
+    if (!jobId) return;
+
+    // Poll job status every 2s
+    const interval = setInterval(async () => {
+      try {
+        const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+        const session = (await supabase.auth.getSession()).data.session;
+        const res = await fetch(`${API_URL}/api/agent/jobs/${jobId}`, {
+          headers: { "X-User-ID": session?.access_token ?? "" },
+        });
+        if (!res.ok) return;
+        const { job, steps } = await res.json();
+
+        if (job.status === "done") {
+          clearInterval(interval);
+          // Auto-redirect to editor
+          router.push(`/modules/${job.module_id}/edit`);
+        } else if (job.status === "failed") {
+          clearInterval(interval);
+          alert("Generasi gagal: " + (job.error ?? "Unknown error"));
+          router.push("/modules/new");
+        } else {
+          // Update current step based on completed steps
+          const doneSteps = steps.filter((s: { status: string }) => s.status === "done").length;
+          setProgressStep(doneSteps);
+        }
+      } catch {
+        // silently ignore polling errors
+      }
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, [jobId, router]);
 
   async function handleGenerate() {
     setSubmitting(true);
-
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { router.push("/login"); return; }
 
-    // Create module first
-    const { data: mod, error: modErr } = await supabase
-      .from("modules")
-      .insert({
-        user_id: user.id,
-        curriculum_version_id: curriculumVersion,
-        module_template_id: curriculumVersion, // placeholder
-        title: `Modul AI — ${topik || mapel}`,
-        subject: mapel,
-        fase,
-        kelas,
-        duration_weeks: duration,
-        learning_style: learningStyle,
-        content: { catatan },
-        status: "draft",
-      })
-      .select()
-      .single();
+    const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+    const session = (await supabase.auth.getSession()).data.session;
 
-    if (modErr || !mod) {
+    try {
+      const res = await fetch(`${API_URL}/api/agent/generate`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-User-ID": session?.access_token ?? user.id,
+        },
+        body: JSON.stringify({
+          subject: mapel,
+          phase: fase,
+          grade: kelas,
+          topik: topik || undefined,
+          duration_minutes: durasi,
+          learning_style: learningStyle,
+          catatan: catatan || undefined,
+          curriculum_version_id: curriculumVersionId || undefined,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.message ?? data.error ?? "Gagal memulai generasi");
+        setSubmitting(false);
+        return;
+      }
+
+      setJobId(data.job_id);
+      setProgressStep(0);
+    } catch (err) {
+      alert("Terjadi kesalahan: " + String(err));
       setSubmitting(false);
-      return;
     }
-
-    router.push(`/modules/${mod.id}/edit?ai=generating`);
   }
 
+  // ── Generating screen ───────────────────────────────────────────
+  if (jobId) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+        <div className="bg-white rounded-2xl border border-gray-200 p-8 max-w-md w-full text-center">
+          <div className="text-6xl mb-6 animate-bounce">🤖</div>
+          <h2 className="text-xl font-bold text-gray-900 mb-1">
+            {progressStep >= 0 && progressStep < STEP_LABELS.length
+              ? STEP_LABELS[progressStep]
+              : "Memproses..."}
+          </h2>
+          <p className="text-sm text-gray-400 mb-8">
+            Biasanya selesai dalam 30–60 detik
+          </p>
+
+          {/* Progress checklist */}
+          <div className="space-y-2 text-left">
+            {STEP_LABELS.map((label, i) => (
+              <div key={i} className="flex items-center gap-3 text-sm">
+                <div className={`w-5 h-5 rounded-full flex items-center justify-center text-xs ${
+                  i < progressStep
+                    ? "bg-green-500 text-white"
+                    : i === progressStep
+                    ? "bg-indigo-600 text-white animate-pulse"
+                    : "bg-gray-200 text-gray-400"
+                }`}>
+                  {i < progressStep ? "✓" : i === progressStep ? "⏳" : ""}
+                </div>
+                <span className={
+                  i === progressStep ? "text-gray-900 font-medium"
+                    : i < progressStep ? "text-gray-500 line-through"
+                    : "text-gray-400"
+                }>
+                  {label}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          {/* Progress bar */}
+          <div className="mt-6 w-full bg-gray-100 rounded-full h-2">
+            <div
+              className="bg-indigo-600 h-2 rounded-full transition-all duration-500"
+              style={{ width: `${Math.min(100, ((progressStep + 1) / STEP_LABELS.length) * 100)}%` }}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Wizard steps ───────────────────────────────────────────────
   return (
     <div className="p-6 max-w-2xl mx-auto">
       {/* Progress */}
@@ -144,7 +259,7 @@ export default function AiWizardPage() {
               {FASES.map((f) => (
                 <button
                   key={f}
-                  onClick={() => { setFase(f); setKelas(KELAS_MAP[f] ?? [10]); }}
+                  onClick={() => { setFase(f); setKelas(KELAS_BY_FASE[f]?.[0] ?? "10"); }}
                   className={`w-12 h-12 rounded-xl border text-sm font-bold transition-all ${
                     fase === f ? "border-indigo-600 bg-indigo-50 text-indigo-700" : "border-gray-200 text-gray-600"
                   }`}
@@ -158,12 +273,12 @@ export default function AiWizardPage() {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Kelas</label>
             <div className="flex flex-wrap gap-2">
-              {(KELAS_MAP[fase] ?? [10]).map((k) => (
+              {(KELAS_BY_FASE[fase] ?? ["10", "11", "12"]).map((k) => (
                 <button
                   key={k}
-                  onClick={() => toggleKelas(k)}
+                  onClick={() => setKelas(k)}
                   className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
-                    kelas.includes(k) ? "border-indigo-600 bg-indigo-50 text-indigo-700" : "border-gray-200 text-gray-600"
+                    kelas === k ? "border-indigo-600 bg-indigo-50 text-indigo-700" : "border-gray-200 text-gray-600"
                   }`}
                 >
                   Kelas {k}
@@ -174,7 +289,7 @@ export default function AiWizardPage() {
 
           <button
             onClick={() => setStep(2)}
-            disabled={!mapel || kelas.length === 0}
+            disabled={!mapel}
             className="w-full py-3 bg-indigo-600 text-white rounded-xl font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50"
           >
             Lanjut
@@ -198,17 +313,17 @@ export default function AiWizardPage() {
             <p className="text-xs text-gray-400 mt-1.5">Semakin spesifik, semakin tepat hasil AI</p>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Durasi</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Alokasi Waktu</label>
             <div className="flex gap-2 flex-wrap">
-              {DURATIONS.map((d) => (
+              {DURASI_OPTIONS.map((d) => (
                 <button
-                  key={d}
-                  onClick={() => setDuration(d)}
+                  key={d.value}
+                  onClick={() => setDurasi(d.value)}
                   className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
-                    duration === d ? "border-indigo-600 bg-indigo-50 text-indigo-700" : "border-gray-200 text-gray-600"
+                    durasi === d.value ? "border-indigo-600 bg-indigo-50 text-indigo-700" : "border-gray-200 text-gray-600"
                   }`}
                 >
-                  {d} minggu
+                  {d.label}
                 </button>
               ))}
             </div>
@@ -260,14 +375,13 @@ export default function AiWizardPage() {
       {step === 4 && (
         <div className="space-y-5">
           <h2 className="text-lg font-bold text-gray-900">Ringkasan</h2>
-
           <div className="bg-gray-50 rounded-xl p-4 space-y-3">
             {[
               ["Mata Pelajaran", mapel],
-              ["Fase / Kelas", `Fase ${fase} — Kelas ${kelas.join(", ")}`],
+              ["Fase / Kelas", `Fase ${fase} — Kelas ${kelas}`],
               ["Topik", topik || "(tidak diisi)"],
-              ["Durasi", `${duration} minggu`],
-              ["Gaya Belajar", LEARNING_STYLES.find((l) => l.id === learningStyle)?.label ?? ""],
+              ["Alokasi Waktu", DURASI_OPTIONS.find(d => d.value === durasi)?.label ?? `${durasi} menit`],
+              ["Gaya Belajar", LEARNING_STYLES.find(l => l.id === learningStyle)?.label ?? ""],
             ].map(([label, value]) => (
               <div key={label} className="flex justify-between text-sm">
                 <span className="text-gray-500">{label}</span>
@@ -277,7 +391,9 @@ export default function AiWizardPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Catatan Tambahan <span className="text-gray-400 font-normal">(opsional)</span></label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Catatan Tambahan <span className="text-gray-400 font-normal">(opsional)</span>
+            </label>
             <textarea
               value={catatan}
               onChange={(e) => setCatatan(e.target.value)}

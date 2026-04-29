@@ -12,9 +12,14 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [tosAccepted, setTosAccepted] = useState(false);
 
   async function handleEmailRegister(e: React.FormEvent) {
     e.preventDefault();
+    if (!tosAccepted) {
+      setError("Anda harus menyetujui Syarat & Ketentuan serta Kebijakan Privasi untuk mendaftar.");
+      return;
+    }
     setLoading(true);
     setError(null);
 
@@ -33,14 +38,11 @@ export default function RegisterPage() {
       return;
     }
 
-    // Check if email confirmation is required
     const { data: profile } = await supabase.auth.getUser();
     if (profile.user) {
-      // User confirmed — redirect to onboarding
       router.push("/onboarding");
       router.refresh();
     } else {
-      // Awaiting email confirmation
       router.push("/login?confirmed=1");
     }
   }
@@ -62,10 +64,24 @@ export default function RegisterPage() {
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
+      {/* Background decoration */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-indigo-50 rounded-full opacity-50 blur-3xl" />
+        <div className="absolute bottom-1/4 left-1/4 w-80 h-80 bg-purple-50 rounded-full opacity-50 blur-3xl" />
+      </div>
+
+      <div className="auth-card relative">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Daftar Modulajar</h1>
-          <p className="text-gray-500 text-sm mt-1">
+          <Link href="/" className="inline-flex items-center gap-2.5 mb-5">
+            <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-sm shadow-indigo-200">
+              <svg width="20" height="20" viewBox="0 0 18 18" fill="none">
+                <path d="M3 3h5v5H3zM10 3h5v5h-5zM3 10h5v5H3zM13 12l3 3M16 12l-3 3" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+            <span className="font-bold text-gray-900 text-xl tracking-tight">Modulajar</span>
+          </Link>
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Daftar Gratis</h1>
+          <p className="text-gray-500 text-sm mt-1.5">
             Gratis untuk guru Indonesia
           </p>
         </div>
@@ -74,7 +90,7 @@ export default function RegisterPage() {
         <button
           onClick={handleGoogleRegister}
           disabled={loading}
-          className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 rounded-xl font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
+          className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-200 rounded-xl font-medium text-gray-700 bg-white hover:bg-gray-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-xs"
         >
           <svg width="18" height="18" viewBox="0 0 18 18">
             <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/>
@@ -85,81 +101,94 @@ export default function RegisterPage() {
           Daftar dengan Google
         </button>
 
-        <div className="relative my-6">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-200" />
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-3 bg-white text-gray-400">atau</span>
-          </div>
+        {/* Divider */}
+        <div className="divider my-6">
+          <span>atau</span>
         </div>
 
         <form onSubmit={handleEmailRegister} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Nama Lengkap
-            </label>
+            <label htmlFor="reg-name" className="form-label">Nama Lengkap</label>
             <input
+              id="reg-name"
               type="text"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               required
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="input"
               placeholder="Ibu Sari, S.Pd."
             />
           </div>
+
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Email
-            </label>
+            <label htmlFor="reg-email" className="form-label">Email</label>
             <input
+              id="reg-email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="input"
               placeholder="bu.guru@sekolah.sch.id"
             />
           </div>
+
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Password
-            </label>
+            <label htmlFor="reg-password" className="form-label">Password</label>
             <input
+              id="reg-password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={8}
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="input"
               placeholder="Min. 8 karakter"
             />
           </div>
 
           {error && (
-            <div className="text-sm text-red-600 bg-red-50 px-4 py-2.5 rounded-xl">
-              {error}
+            <div className="alert alert-danger">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="flex-shrink-0">
+                <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.5"/>
+                <path d="M8 5v4M8 11v.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+              </svg>
+              <span>{error}</span>
             </div>
           )}
 
+          {/* ToS checkbox */}
+          <div className="flex items-start gap-2.5 text-xs text-gray-500 bg-gray-50 p-3 rounded-xl border border-gray-100">
+            <input
+              type="checkbox"
+              id="tos"
+              checked={tosAccepted}
+              onChange={(e) => {
+                setTosAccepted(e.target.checked);
+                if (error?.includes("Syarat & Ketentuan")) setError(null);
+              }}
+              className="mt-0.5 w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 cursor-pointer flex-shrink-0"
+            />
+            <label htmlFor="tos" className="leading-relaxed cursor-pointer">
+              Saya menyetujui{" "}
+              <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline font-medium">Syarat & Ketentuan</a>,{" "}
+              <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline font-medium">Kebijakan Privasi</a>, dan{" "}
+              <a href="/cookies" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline font-medium">Kebijakan Cookie</a>.
+            </label>
+          </div>
+
           <button
             type="submit"
-            disabled={loading}
-            className="w-full py-2.5 bg-indigo-600 text-white rounded-xl font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50"
+            disabled={loading || !tosAccepted}
+            className="btn btn-primary w-full py-3 mt-2"
           >
-            {loading ? "Memproses..." : "Daftar"}
+            {loading ? "Memproses..." : "Daftar Sekarang"}
           </button>
-
-          <p className="text-xs text-gray-400 text-center">
-            Dengan mendaftar, Anda menyetujui{" "}
-            <a href="#" className="underline">Syarat & Ketentuan</a> dan{" "}
-            <a href="#" className="underline">Kebijakan Privasi</a>.
-          </p>
         </form>
 
-        <p className="text-center text-sm text-gray-500 mt-6">
+        <p className="text-center text-sm text-gray-500 mt-8">
           Sudah punya akun?{" "}
-          <Link href="/login" className="text-indigo-600 font-medium hover:underline">
+          <Link href="/login" className="text-indigo-600 font-medium hover:text-indigo-700 transition-colors">
             Masuk di sini
           </Link>
         </p>

@@ -1,0 +1,51 @@
+name: Deploy Marketing App
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - 'apps/marketing/**'
+      - '.github/workflows/deploy-marketing.yml'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Pull Vercel Environment Information
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+        working-directory: apps/marketing
+
+      - name: Build Project Artifacts
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+        working-directory: apps/marketing
+        env:
+          VERCEL_ORG_ID: team_xO6LY50PZP7jjCn62xQWrMrG
+
+      - name: Deploy to Vercel (Production)
+        id: deploy
+        run: |
+          url=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})
+          echo "url=$url" >> $GITHUB_OUTPUT
+        working-directory: apps/marketing
+        env:
+          VERCEL_ORG_ID: team_xO6LY50PZP7jjCn62xQWrMrG
+
+      - name: Comment Deployment URL
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: 'Deployed to Vercel: ${{ steps.deploy.outputs.url }}'
+            })
