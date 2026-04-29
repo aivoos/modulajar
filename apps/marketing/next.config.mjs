@@ -1,27 +1,3 @@
-import withPWAInit from "@ducanh2912/next-pwa";
-
-const withPWA = withPWAInit({
-  dest: "public",
-  cacheOnFrontEndNav: true,
-  aggressiveFrontEndNavCaching: true,
-  reloadOnOnline: true,
-  swcMinify: true,
-  disable: process.env.NODE_ENV === "development",
-  workboxOptions: {
-    disableDevLogs: process.env.NODE_ENV === "production",
-    runtimeCaching: [
-      {
-        urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\/.*/i,
-        handler: "CacheFirst",
-        options: {
-          cacheName: "google-fonts",
-          expiration: { maxEntries: 10, maxAgeSeconds: 365 * 24 * 60 * 60 },
-        },
-      },
-    ],
-  },
-});
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   transpilePackages: [],
@@ -50,5 +26,4 @@ const nextConfig = {
   },
 };
 
-const nextConfigWithPWA = withPWA(nextConfig);
-export default nextConfigWithPWA;
+export default nextConfig;
