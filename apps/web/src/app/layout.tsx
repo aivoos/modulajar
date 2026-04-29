@@ -1,10 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import { Inter } from "next/font/google";
 import { AnalyticsProvider } from "@/providers/posthog";
 import { SentryPageFilter } from "@/providers/sentry";
-
-const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: {
@@ -73,7 +70,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="id">
-      <body className={inter.className}>
+      <body>
         <AnalyticsProvider>
           <SentryPageFilter />
           {children}
