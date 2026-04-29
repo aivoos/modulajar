@@ -20,9 +20,11 @@ jobs:
 
       - name: Pull Vercel Environment Information
         run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+        working-directory: apps/marketing
 
       - name: Build Project Artifacts
         run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+        working-directory: apps/marketing
         env:
           VERCEL_ORG_ID: team_xO6LY50PZP7jjCn62xQWrMrG
 
@@ -31,6 +33,7 @@ jobs:
         run: |
           url=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})
           echo "url=$url" >> $GITHUB_OUTPUT
+        working-directory: apps/marketing
         env:
           VERCEL_ORG_ID: team_xO6LY50PZP7jjCn62xQWrMrG
 
