@@ -31,6 +31,7 @@ const DARK = {
 };
 
 // ─── DATA ─────────────────────────────────────────────────────────────────────
+// Ref: modulajar-spec-v3.jsx — SSOT: plan = free | pro | school | mode = full_ai | curated | scratch
 const MODULES = [
   { id:1, title:"Persamaan Linear Satu Variabel", subject:"Matematika", phase:"D", grade:"8", cls:"8A", status:"published", mode:"full_ai", updated:"2 jam lalu" },
   { id:2, title:"Ekosistem dan Rantai Makanan", subject:"IPA", phase:"D", grade:"7", cls:"7B", status:"draft", mode:"scratch", updated:"Kemarin" },
@@ -146,17 +147,17 @@ export default function Dashboard() {
           ].map(item => <NavItem key={item.id} {...item} active={nav===item.id} onClick={()=>setNav(item.id)} T={T} dark={dark} />)}
         </div>
 
-        {/* Quota bar */}
+        {/* Quota bar — Ref: modulajar-spec-v3.jsx — plan = pro (not go), 30×/bulan */}
         <div style={{ padding:"10px 10px", borderTop:`1px solid ${T.sidebarBorder}` }}>
           <div style={{ background:dark?"rgba(79,70,229,.12)":BRAND.indigoLight, borderRadius:10, padding:"10px 12px" }}>
             <div style={{ display:"flex", justifyContent:"space-between", marginBottom:5 }}>
-              <span style={{ fontSize:12, fontWeight:700, color:BRAND.indigo }}>Plan Go</span>
-              <span style={{ fontSize:10, color:BRAND.indigo, fontWeight:600 }}>7/10 slot</span>
+              <span style={{ fontSize:12, fontWeight:700, color:BRAND.indigo }}>Plan Pro</span>
+              <span style={{ fontSize:10, color:BRAND.indigo, fontWeight:600 }}>7/30 slot</span>
             </div>
             <div style={{ background:dark?"rgba(79,70,229,.2)":"rgba(79,70,229,.15)", borderRadius:99, height:5 }}>
-              <div style={{ width:"70%", height:"100%", background:BRAND.indigo, borderRadius:99 }} />
+              <div style={{ width:"23%", height:"100%", background:BRAND.indigo, borderRadius:99 }} />
             </div>
-            <div style={{ fontSize:11, color:T.textSub, marginTop:5 }}>3 Full AI tersisa bulan ini</div>
+            <div style={{ fontSize:11, color:T.textSub, marginTop:5 }}>23 AI generate tersisa bulan ini</div>
           </div>
         </div>
 
@@ -434,25 +435,28 @@ export default function Dashboard() {
                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", flexWrap:"wrap", gap:10 }}>
                   <div>
                     <div style={{ fontSize:12, opacity:.65, marginBottom:3 }}>Plan aktif</div>
-                    <div style={{ fontSize:30, fontWeight:900, letterSpacing:-1 }}>Go</div>
-                    <div style={{ fontSize:13, opacity:.7, marginTop:1 }}>Rp 49.000/bulan · Aktif sampai 31 Des 2025</div>
+                    {/* Ref: modulajar-spec-v3.jsx — Pro: Rp 99k/mo, Rp 494k/6mo, Rp 790k/thn · Sekolah: tiered per-guru */}
+                    <div style={{ fontSize:30, fontWeight:900, letterSpacing:-1 }}>Pro</div>
+                    <div style={{ fontSize:13, opacity:.7, marginTop:1 }}>Rp 99.000/bulan · Aktif sampai 31 Des 2026</div>
                   </div>
                   <div style={{ background:"rgba(255,255,255,.1)", borderRadius:10, padding:"12px 16px", textAlign:"right" }}>
                     <div style={{ fontSize:11, opacity:.6 }}>AI Quota bulan ini</div>
-                    <div style={{ fontSize:24, fontWeight:800, marginTop:1 }}>7 / 10</div>
-                    <div style={{ fontSize:10, opacity:.5 }}>Full AI tersisa</div>
+                    <div style={{ fontSize:24, fontWeight:800, marginTop:1 }}>7 / 30</div>
+                    <div style={{ fontSize:10, opacity:.5 }}>AI generate tersisa</div>
                   </div>
                 </div>
                 <div style={{ background:"rgba(255,255,255,.15)", borderRadius:99, height:5, marginTop:18 }}>
-                  <div style={{ width:"70%", height:"100%", background:BRAND.amber, borderRadius:99 }} />
+                  <div style={{ width:"23%", height:"100%", background:BRAND.amber, borderRadius:99 }} />
                 </div>
               </div>
-              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:18 }}>
-                <button style={{ padding:"12px", background:dark?"rgba(245,158,11,.08)":BRAND.amberLight, color:BRAND.amber, borderRadius:10, border:`1.5px solid ${BRAND.amber}33`, fontWeight:700, fontSize:13, cursor:"pointer", fontFamily:"inherit" }}>⚡ Top-up +3 AI — Rp 5.000</button>
-                <button style={{ padding:"12px", background:dark?"rgba(79,70,229,.1)":BRAND.indigoLight, color:BRAND.indigo, borderRadius:10, border:`1.5px solid ${BRAND.indigo}33`, fontWeight:700, fontSize:13, cursor:"pointer", fontFamily:"inherit" }}>🚀 Upgrade ke Plus</button>
+              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:10, marginBottom:18 }}>
+                <button style={{ padding:"12px", background:dark?"rgba(245,158,11,.08)":BRAND.amberLight, color:BRAND.amber, borderRadius:10, border:`1.5px solid ${BRAND.amber}33`, fontWeight:700, fontSize:13, cursor:"pointer", fontFamily:"inherit" }}>⚡ Top-up +3 AI — Rp 10.000</button>
+                <button style={{ padding:"12px", background:dark?"rgba(16,185,129,.08)":BRAND.emeraldLight, color:BRAND.emerald, borderRadius:10, border:`1.5px solid ${BRAND.emerald}33`, fontWeight:700, fontSize:13, cursor:"pointer", fontFamily:"inherit" }}>📦 Paket Bukti PMM</button>
+                <button style={{ padding:"12px", background:dark?"rgba(79,70,229,.1)":BRAND.indigoLight, color:BRAND.indigo, borderRadius:10, border:`1.5px solid ${BRAND.indigo}33`, fontWeight:700, fontSize:13, cursor:"pointer", fontFamily:"inherit" }}>📄 Billing History</button>
               </div>
               <h3 style={{ fontSize:14, fontWeight:700, color:T.text, marginBottom:10 }}>Riwayat Pembayaran</h3>
-              {[{ date:"1 Nov 2025", desc:"Plan Go — Bulanan", method:"QRIS", amount:"Rp 49.000" },{ date:"1 Okt 2025", desc:"Plan Go — Bulanan", method:"GoPay", amount:"Rp 49.000" },{ date:"15 Sep 2025", desc:"Top-up AI (+3)", method:"QRIS", amount:"Rp 5.000" }].map((p,i) => (
+              {/* Ref: modulajar-spec-v3.jsx — billing_cycle: monthly | 6mo | yearly */}
+              {[{ date:"1 Nov 2025", desc:"Plan Pro — Bulanan", method:"QRIS", amount:"Rp 99.000" },{ date:"1 Okt 2025", desc:"Plan Pro — Bulanan", method:"GoPay", amount:"Rp 99.000" },{ date:"15 Sep 2025", desc:"Top-up AI (+3)", method:"QRIS", amount:"Rp 10.000" }].map((p,i) => (
                 <div key={i} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"12px 16px", background:T.surface, border:`1.5px solid ${T.border}`, borderRadius:11, marginBottom:7, flexWrap:"wrap", gap:8, boxShadow:T.cardShadow }}>
                   <div>
                     <div style={{ fontWeight:600, fontSize:13, color:T.text }}>{p.desc}</div>

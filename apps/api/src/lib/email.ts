@@ -75,7 +75,7 @@ function welcomeEmail(name: string): string {
     <p>Terima kasih sudah bergabung di <strong>Modulajar</strong> — platform AI untuk guru Indonesia dalam membuat modul ajar Kurikulum Merdeka.</p>
     <div class="info-box">
       <div class="label">Yang bisa kamu lakukan sekarang</div>
-      <div class="value">Buat 2 modul gratis/bulan</div>
+      <div class="value">3× AI generate modul (lifetime trial)</div>
     </div>
     <p>Berikut langkah cepat untuk memulai:</p>
     <ol style="color:#374151;line-height:1.8;padding-left:20px">
@@ -173,7 +173,7 @@ function quotaWarningEmail(params: {
     <p>Halo <strong>${params.userName}</strong>,</p>
     <p>Kamu sudah menggunakan <strong>${params.used} dari ${params.limit}</strong> modul AI bulan ini. Tinggal <strong>${params.left} modul</strong> lagi.</p>
     <div class="alert alert-warning">
-      Quart Habis? Upgrade ke plan Go (Rp 49.000/bulan) atau Plus (Rp 99.000/bulan) untuk kuota lebih besar.
+      Quart Habis? Upgrade ke Plan Pro (Rp 99.000/bulan) untuk 30× AI generate/bulan.
     </div>
     <div class="text-center mt-4">
       <a href="${BASE_URL}/settings/billing" class="btn">Upgrade Sekarang →</a>
@@ -213,6 +213,34 @@ function schoolInviteEmail(params: {
   `);
 }
 
+function pmmDeadlineEmail(params: {
+  userName: string;
+  deadlineDate: string;
+  journalCount: number;
+  moduleCount: number;
+  gradeCount: number;
+}): string {
+  return htmlLayout(`
+    <h1>Deadline PMM Sedang Mendekati! 🏅</h1>
+    <p>Halo <strong>${params.userName}</strong>,</p>
+    <p>Platform Merdeka Mengajar (PMM) meminta bukti kinerja guru sebelum <strong>${params.deadlineDate}</strong>. Sudah sejauh mana?</p>
+    <div class="info-box">
+      <div class="label">Ceklist Bukti Kinerja PMM</div>
+      <div class="value" style="font-size:14px;line-height:2">
+        ${params.journalCount > 0 ? `✓ ${params.journalCount} jurnal mengajar` : `✗ Belum ada jurnal`}<br/>
+        ${params.moduleCount > 0 ? `✓ ${params.moduleCount} modul ajar` : `✗ Belum ada modul`}<br/>
+        ${params.gradeCount > 0 ? `✓ ${params.gradeCount} input nilai` : `✗ Belum ada nilai`}
+      </div>
+    </div>
+    <div class="alert alert-warning">
+      <strong>Jangan sampai terlewat!</strong> Modulajar bantu generate paket bukti PMM dalam 1 klik — tinggal upload ke PMM.
+    </div>
+    <div class="text-center mt-4">
+      <a href="${BASE_URL}/pmm" class="btn">Generate Paket Bukti PMM →</a>
+    </div>
+  `);
+}
+
 function migrationReadyEmail(params: {
   userName: string;
   moduleTitle: string;
@@ -242,6 +270,7 @@ type EmailTemplate =
   | { type: "quota_warning"; userName: string; used: number; limit: number; left: number }
   | { type: "export_ready"; userName: string; moduleTitle: string; exportUrl?: string }
   | { type: "school_invite"; inviteeName: string; schoolName: string; inviterName: string; inviteUrl: string }
+  | { type: "pmm_deadline"; userName: string; deadlineDate: string; journalCount: number; moduleCount: number; gradeCount: number }
   | { type: "migration_ready"; userName: string; moduleTitle: string; fromVersion: string; toVersion: string };
 
 export async function sendEmail(userId: string, template: EmailTemplate): Promise<{ success: boolean; error?: string }> {
@@ -279,6 +308,10 @@ export async function sendEmail(userId: string, template: EmailTemplate): Promis
     case "school_invite":
       subject = `Undangan Bergabung di ${template.schoolName}`;
       html = schoolInviteEmail(template);
+      break;
+    case "pmm_deadline":
+      subject = `Deadline PMM: ${template.deadlineDate}`;
+      html = pmmDeadlineEmail({ userName: template.userName, deadlineDate: template.deadlineDate, journalCount: template.journalCount, moduleCount: template.moduleCount, gradeCount: template.gradeCount });
       break;
     case "migration_ready":
       subject = `Modul "${template.moduleTitle}" Perlu Dimigrasikan`;

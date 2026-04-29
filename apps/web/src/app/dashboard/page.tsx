@@ -6,12 +6,6 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 
-const PLAN_LIMITS: Record<string, { full_ai_per_month: number }> = {
-  go: { full_ai_per_month: 10 },
-  plus: { full_ai_per_month: 20 },
-  sekolah: { full_ai_per_month: 30 },
-};
-
 interface DashboardStats {
   draft: number;
   published: number;
@@ -31,10 +25,17 @@ interface Module {
   id: string;
   title: string;
   subject: string;
-  fase: string;
+  phase: string;
   status: string;
   updated_at: string;
   is_curated: boolean;
+}
+
+interface JournalStreak {
+  current_streak: number;
+  longest_streak: number;
+  this_month: number;
+  last_journal_date: string | null;
 }
 
 function StatCard({ label, value, icon, color }: { label: string; value: number; icon: string; color: string }) {
@@ -47,13 +48,11 @@ function StatCard({ label, value, icon, color }: { label: string; value: number;
   );
 }
 
-/** Get active academic year label for Indonesian school year (Jul–Jun) */
 function getActiveAcademicYear(): { label: string; year: number; semester: "ganjil" | "genap" } {
   const now = new Date();
   const wib = new Date(now.getTime() + 7 * 60 * 60 * 1000);
   const month = wib.getUTCMonth();
   const wibYear = wib.getUTCFullYear();
-
   if (month >= 6) {
     return { label: `${wibYear}/${wibYear + 1}`, year: wibYear, semester: "ganjil" };
   } else {
@@ -61,7 +60,6 @@ function getActiveAcademicYear(): { label: string; year: number; semester: "ganj
   }
 }
 
-/** Get WIB greeting based on local time + 7h offset */
 function getWIBGreeting(): string {
   const now = new Date();
   const wib = new Date(now.getTime() + 7 * 60 * 60 * 1000);
@@ -72,10 +70,58 @@ function getWIBGreeting(): string {
   return "Selamat malam";
 }
 
+function computeStreak(dates: string[]): { current: number; longest: number; lastDate: string | null } {
+  if (!dates.length) return { current: 0, longest: 0, lastDate: null };
+  const sorted = [...dates].sort().reverse();
+  const lastDate = sorted[0];
+
+  const today = new Date();
+  const todayStr = today.toISOString().split("T")[0];
+  const yesterdayStr = new Date(today.getTime() - 86400000).toISOString().split("T")[0];
+
+  let longest = 0;
+  let run = 0;
+  let prevDate: Date | null = null;
+
+  for (const d of sorted) {
+    if (prevDate === null) {
+      run = 1;
+    } else {
+      const diff = (prevDate.getTime() - new Date(d).getTime()) / 86400000;
+      if (diff === 1) {
+        run++;
+      } else {
+        longest = Math.max(longest, run);
+        run = 1;
+      }
+    }
+    prevDate = new Date(d);
+  }
+  longest = Math.max(longest, run);
+
+  // Current streak: must have journal today or yesterday
+  const streakCheck = [todayStr, yesterdayStr];
+  let current = 0;
+  const checkDate = streakCheck.includes(lastDate) ? new Date(lastDate) : null;
+  if (checkDate) {
+    let cursor = checkDate;
+    for (const d of sorted) {
+      const diff = Math.abs((cursor.getTime() - new Date(d).getTime()) / 86400000);
+      if (diff <= 1) {
+        current++;
+        cursor = new Date(d);
+      } else break;
+    }
+  }
+
+  return { current, longest, lastDate };
+}
+
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats>({ draft: 0, published: 0, needs_migration: 0, total: 0 });
   const [sub, setSub] = useState<Subscription | null>(null);
   const [recentModules, setRecentModules] = useState<Module[]>([]);
+  const [streak, setStreak] = useState<JournalStreak>({ current_streak: 0, longest_streak: 0, this_month: 0, last_journal_date: null });
   const [userName, setUserName] = useState("");
   const [loading, setLoading] = useState(true);
   const [academicYear, setAcademicYear] = useState("");
@@ -100,7 +146,7 @@ export default function DashboardPage() {
       .ilike("label", `${target.label}%`)
       .limit(1);
 
-    if ((!existingSameYear || existingSameYear.length === 0)) {
+    if (!existingSameYear || existingSameYear.length === 0) {
       await supabase.from("academic_years").insert({
         label: `${target.label} (Personal)`,
         year: target.year,
@@ -111,53 +157,55 @@ export default function DashboardPage() {
       });
     }
 
-    const { data: subscription } = await supabase
-      .from("subscriptions")
-      .select("plan, status, ai_quota_used, ai_quota_limit, grace_period_end")
-      .eq("user_id", user.id)
-      .single();
+    const [{ data: subscription }, { count: total }, { count: draft }, { count: published }] =
+      await Promise.all([
+        supabase.from("subscriptions")
+          .select("plan, status, ai_quota_used, ai_quota_limit, grace_period_end")
+          .eq("user_id", user.id)
+          .maybeSingle(),
+        supabase.from("modules").select("id", { count: "exact", head: true }).eq("user_id", user.id),
+        supabase.from("modules").select("id", { count: "exact", head: true }).eq("user_id", user.id).eq("status", "draft"),
+        supabase.from("modules").select("id", { count: "exact", head: true }).eq("user_id", user.id).eq("status", "published"),
+      ]);
+
     if (subscription) setSub(subscription as Subscription);
 
-    const { count: total } = await supabase
-      .from("modules")
-      .select("id", { count: "exact", head: true })
-      .eq("user_id", user.id);
-    const { count: draft } = await supabase
-      .from("modules")
-      .select("id", { count: "exact", head: true })
-      .eq("user_id", user.id)
-      .eq("status", "draft");
-    const { count: published } = await supabase
-      .from("modules")
-      .select("id", { count: "exact", head: true })
-      .eq("user_id", user.id)
-      .eq("status", "published");
-
     const { data: pendingMigrations } = await supabase
-      .from("module_migrations")
-      .select("module_id")
-      .eq("status", "pending_review");
+      .from("module_migrations").select("module_id").eq("status", "pending_review");
     const pendingIds = (pendingMigrations ?? []).map((m: { module_id: string }) => m.module_id);
     let needs_migration = 0;
     if (pendingIds.length > 0) {
-      const { count } = await supabase
-        .from("modules")
-        .select("id", { count: "exact", head: true })
-        .in("id", pendingIds)
-        .eq("user_id", user.id);
+      const { count } = await supabase.from("modules")
+        .select("id", { count: "exact", head: true }).in("id", pendingIds).eq("user_id", user.id);
       needs_migration = count ?? 0;
     }
 
-    setStats({
-      total: total ?? 0,
-      draft: draft ?? 0,
-      published: published ?? 0,
-      needs_migration,
-    });
+    setStats({ total: total ?? 0, draft: draft ?? 0, published: published ?? 0, needs_migration });
+
+    // Journal streak
+    const now = new Date();
+    const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
+    const { data: journalDates } = await supabase
+      .from("journals")
+      .select("date")
+      .eq("user_id", user.id)
+      .gte("date", monthStart);
+    const thisMonth = journalDates?.length ?? 0;
+
+    const { data: allJournalDates } = await supabase
+      .from("journals")
+      .select("date")
+      .eq("user_id", user.id)
+      .order("date", { ascending: false })
+      .limit(100);
+    const { current, longest, lastDate } = computeStreak(
+      (allJournalDates ?? []).map((j: { date: string }) => j.date)
+    );
+    setStreak({ current_streak: current, longest_streak: longest, this_month: thisMonth, last_journal_date: lastDate });
 
     const { data: recent } = await supabase
       .from("modules")
-      .select("id, title, subject, fase, status, updated_at, is_curated")
+      .select("id, title, subject, phase, status, updated_at, is_curated")
       .eq("user_id", user.id)
       .order("updated_at", { ascending: false })
       .limit(5);
@@ -171,11 +219,12 @@ export default function DashboardPage() {
   const firstName = userName.split(" ")[0] ?? "Guru";
 
   const isFree = sub?.plan === "free";
-  const isGo = sub?.plan === "go" || sub?.plan === "plus" || sub?.plan === "sekolah";
-  const limit = isFree ? 0 : (PLAN_LIMITS[sub?.plan ?? ""]?.full_ai_per_month ?? 0);
+  const isPro = sub?.plan === "pro" || sub?.plan === "school";
+  const quotaLimit = isFree ? 3 : (sub?.ai_quota_limit ?? 0);
+  const isUnlimited = quotaLimit === -1;
   const used = sub?.ai_quota_used ?? 0;
-  const quotaPct = limit > 0 ? Math.min((used / limit) * 100, 100) : 0;
-  const quotaLeft = Math.max(0, limit - used);
+  const quotaPct = isUnlimited ? 0 : Math.min((used / quotaLimit) * 100, 100);
+  const quotaLeft = isUnlimited ? null : Math.max(0, quotaLimit - used);
 
   const graceMs = sub?.grace_period_end ? new Date(sub.grace_period_end).getTime() - Date.now() : 0;
   const graceDaysLeft: number | null = graceMs > 0 ? Math.ceil(graceMs / 86400000) : null;
@@ -198,13 +247,9 @@ export default function DashboardPage() {
           </div>
           <nav className="flex items-center gap-5 text-sm">
             <Link href="/modules" className="text-[#64748B] hover:text-[#E2E8F0] transition-colors">Modul</Link>
+            <Link href="/journal" className="text-[#64748B] hover:text-[#E2E8F0] transition-colors">Jurnal</Link>
             <Link href="/settings" className="text-[#64748B] hover:text-[#E2E8F0] transition-colors">Pengaturan</Link>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                fetch("/auth/logout", { method: "POST" }).then(() => router.push("/"));
-              }}
-            >
+            <form onSubmit={(e) => { e.preventDefault(); fetch("/api/auth/logout", { method: "POST" }).then(() => router.push("/")); }}>
               <button type="submit" className="text-[#334155] hover:text-[#64748B] transition-colors">Keluar</button>
             </form>
           </nav>
@@ -217,7 +262,9 @@ export default function DashboardPage() {
         <div>
           <h1 className="text-2xl font-bold text-[#F1F5F9]">{greeting}, {firstName}! 👋</h1>
           <p className="text-[#64748B] mt-1.5 text-sm">
-            {isFree ? "Mulai buat modul pertamamu hari ini." : `Kamu sudah punya ${stats.published} modul yang dipublikasi.`}
+            {isFree
+              ? "Mulai buat modul pertamamu hari ini. 3× generate gratis."
+              : `Kamu sudah punya ${stats.published} modul dipublikasi.`}
           </p>
         </div>
 
@@ -247,8 +294,8 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* CTA */}
-        <div>
+        {/* CTA Row */}
+        <div className="flex flex-wrap items-center gap-3">
           <Link
             href="/modules/new"
             className="inline-flex items-center gap-2 px-6 py-3 bg-[#4F46E5] text-white rounded-xl font-semibold hover:bg-[#4338CA] transition-colors shadow-lg shadow-indigo-500/20"
@@ -256,7 +303,47 @@ export default function DashboardPage() {
             <span className="text-lg">+</span>
             Buat Modul Baru
           </Link>
+          {isPro && (
+            <Link
+              href="/journal"
+              className="inline-flex items-center gap-2 px-5 py-3 bg-[#161B27] border border-[#21293A] text-[#E2E8F0] rounded-xl font-medium hover:bg-[#1A2030] transition-colors"
+            >
+              📖 Isi Jurnal
+            </Link>
+          )}
         </div>
+
+        {/* Journal Streak (Pro/School only) */}
+        {isPro && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-[#161B27] rounded-xl border border-[#21293A] p-5">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-[#64748B]">Streak Saat Ini</span>
+                <span className="text-lg">🔥</span>
+              </div>
+              <div className="text-3xl font-bold text-[#F59E0B]">{streak.current_streak} hari</div>
+              {streak.current_streak > 0 && streak.last_journal_date && (
+                <p className="text-xs text-[#475569] mt-1">
+                  Terakhir: {new Date(streak.last_journal_date).toLocaleDateString("id-ID")}
+                </p>
+              )}
+            </div>
+            <div className="bg-[#161B27] rounded-xl border border-[#21293A] p-5">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-[#64748B]">Streak Terpanjang</span>
+                <span className="text-lg">🏆</span>
+              </div>
+              <div className="text-3xl font-bold text-[#818CF8]">{streak.longest_streak} hari</div>
+            </div>
+            <div className="bg-[#161B27] rounded-xl border border-[#21293A] p-5">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-[#64748B]">Jurnal Bulan Ini</span>
+                <span className="text-lg">📖</span>
+              </div>
+              <div className="text-3xl font-bold text-[#10B981]">{streak.this_month}×</div>
+            </div>
+          </div>
+        )}
 
         {/* Stat Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -274,31 +361,38 @@ export default function DashboardPage() {
           )}
         </div>
 
-        {/* Quota bar (Go/Plus/Sekolah) */}
-        {isGo && (
+        {/* Quota bar (Free/Pro/School) */}
+        {!isUnlimited && (
           <div className="bg-[#161B27] rounded-xl border border-[#21293A] p-5">
             <div className="flex items-center justify-between mb-3">
               <div>
-                <h2 className="font-semibold text-[#E2E8F0]">Kuota AI Bulan Ini</h2>
-                <p className="text-sm text-[#64748B]">Pakai {used} dari {limit} modul Full AI</p>
+                <h2 className="font-semibold text-[#E2E8F0]">
+                  {isFree ? "Kuota AI Trial" : "Kuota AI Bulan Ini"}
+                </h2>
+                <p className="text-sm text-[#64748B]">
+                  {isFree
+                    ? `${3 - used} generate tersisa dari 3× total`
+                    : `Pakai ${used} dari ${quotaLimit} modul`}
+                </p>
               </div>
               <div className="text-right">
-                <span className="text-2xl font-bold text-[#818CF8]">{quotaLeft}</span>
-                <span className="text-sm text-[#475569] ml-1">sisa</span>
+                <span className="text-2xl font-bold text-[#818CF8]">
+                  {isFree ? `${3 - used}×` : `${quotaLeft}×`}
+                </span>
+                <span className="text-sm text-[#475569] ml-1">{isFree ? "sisa" : "sisa"}</span>
               </div>
             </div>
             <div className="w-full bg-[#1A2030] rounded-full h-2.5">
               <div
-                className={`h-2.5 rounded-full transition-all ${quotaPct >= 90 ? "bg-[#EF4444]" : quotaPct >= 70 ? "bg-[#F59E0B]" : "bg-[#818CF8]"}`}
+                className={`h-2.5 rounded-full transition-all ${
+                  quotaPct >= 90 ? "bg-[#EF4444]" : quotaPct >= 70 ? "bg-[#F59E0B]" : "bg-[#818CF8]"
+                }`}
                 style={{ width: `${quotaPct}%` }}
               />
             </div>
-            {quotaLeft === 0 && (
-              <div className="mt-3 flex items-center justify-between">
-                <p className="text-sm text-[#F59E0B]">Kuota habis bulan ini.</p>
-                <Link href="/settings/billing?topup=true" className="text-sm text-[#818CF8] font-medium hover:underline">
-                  + Top-up Rp 10.000 →
-                </Link>
+            {quotaLeft === 0 && isPro && (
+              <div className="mt-3">
+                <p className="text-sm text-[#F59E0B]">Kuota habis. Upgrade untuk unlimited →</p>
               </div>
             )}
           </div>
@@ -309,15 +403,17 @@ export default function DashboardPage() {
           <div className="bg-gradient-to-r from-[#1E1B4B]/50 to-[#312E81]/30 rounded-xl border border-[#4F46E5]/20 p-5">
             <div className="flex items-start justify-between">
               <div>
-                <h2 className="font-semibold text-[#E2E8F0] mb-1">Buka semua fitur dengan Go</h2>
-                <p className="text-sm text-[#64748B] mb-4 leading-relaxed">
-                  Full AI generate modul + download PDF tanpa watermark + priority support.
+                <h2 className="font-semibold text-[#E2E8F0] mb-1">Buka semua fitur dengan Pro</h2>
+                <p className="text-sm text-[#64748B] mb-3 leading-relaxed">
+                  Unlimited AI generate + jurnal harian + absensi + input nilai + paket bukti PMM.
+                  <br />
+                  <strong className="text-[#818CF8]">Rp 41.500/bulan — lebih murah dari segelas kopi.</strong>
                 </p>
                 <Link
                   href="/settings/billing"
                   className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#4F46E5] text-white text-sm font-medium rounded-lg hover:bg-[#4338CA] transition-colors shadow-md shadow-indigo-500/20"
                 >
-                  Upgrade Rp 49.000/bulan →
+                  Berlangganan Pro Rp 249.000/tahun →
                 </Link>
               </div>
               <div className="text-4xl">🚀</div>

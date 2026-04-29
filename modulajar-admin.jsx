@@ -46,11 +46,13 @@ const METRICS = [
 ];
 
 const USERS = [
-  { name:"Bu Sari Dewi", email:"sari@sma1bdg.sch.id", school:"SMA Negeri 1 Bandung", plan:"go", status:"active", modules:12, joined:"2 minggu lalu", ai_used:7 },
-  { name:"Pak Ahmad Fauzi", email:"ahmad@gmail.com", school:"SMP Negeri 3 Jakarta", plan:"plus", status:"active", modules:28, joined:"1 bulan lalu", ai_used:-1 },
+  // Ref: modulajar-spec-v3.jsx — plan = free | pro | school (not go/plus/sekolah)
+  { name:"Bu Sari Dewi", email:"sari@sma1bdg.sch.id", school:"SMA Negeri 1 Bandung", plan:"pro", status:"active", modules:12, joined:"2 minggu lalu", ai_used:7 },
+  { name:"Pak Ahmad Fauzi", email:"ahmad@gmail.com", school:"SMP Negeri 3 Jakarta", plan:"pro", status:"active", modules:28, joined:"1 bulan lalu", ai_used:22 },
   { name:"Bu Rini Kusuma", email:"rini@smpn5.sch.id", school:"SMP Negeri 5 Surabaya", plan:"free", status:"active", modules:3, joined:"3 hari lalu", ai_used:0 },
-  { name:"Pak Budi Santoso", email:"budi@sman2.sch.id", school:"SMA Negeri 2 Bandung", plan:"go", status:"past_due", modules:8, joined:"3 bulan lalu", ai_used:9 },
+  { name:"Pak Budi Santoso", email:"budi@sman2.sch.id", school:"SMA Negeri 2 Bandung", plan:"pro", status:"past_due", modules:8, joined:"3 bulan lalu", ai_used:9 },
   { name:"Bu Dewi Lestari", email:"dewi@gmail.com", school:"SD Negeri 1 Yogyakarta", plan:"free", status:"active", modules:1, joined:"Kemarin", ai_used:0 },
+  { name:"Pak Hasan BAS", email:"hasan@smkn1.sch.id", school:"SMK Negeri 1 Bandung", plan:"school", status:"active", modules:84, joined:"2 bulan lalu", ai_used:-1 },
 ];
 
 const CURATED_MODULES = [
@@ -66,15 +68,17 @@ const CV = [
 ];
 
 const INIT_FLAGS = [
-  { key:"full_ai_mode", enabled:true, desc:"Full AI generate modul — aktif saat launch" },
-  { key:"curated_library", enabled:true, desc:"Browse dan fork curated modules — aktif saat launch" },
-  { key:"plus_tier", enabled:false, desc:"Plus tier — aktifkan saat Sprint 1 post-launch" },
-  { key:"sekolah_tier", enabled:false, desc:"Sekolah tier — aktifkan saat Sprint 3 post-launch" },
-  { key:"journal_feature", enabled:false, desc:"Jurnal mengajar harian — Sprint 1" },
-  { key:"grade_feature", enabled:false, desc:"Input nilai + deskripsi AI — Sprint 1" },
-  { key:"pwa_offline", enabled:false, desc:"Offline mode PWA — Sprint 2" },
-  { key:"bukti_pmm", enabled:false, desc:"Paket Bukti Kinerja PMM — Sprint 2" },
-  { key:"bank_soal", enabled:false, desc:"Bank Soal AI — Sprint 2" },
+  // Ref: modulajar-spec-v3.jsx — Feature Flags
+  { key:"ai_generate",         enabled:true,  desc:"AI generate modul — aktif saat launch" },
+  { key:"pdf_export",           enabled:true,  desc:"Export PDF — aktif saat launch" },
+  { key:"curated_library",      enabled:true,  desc:"Curated library browse+fork — aktif saat launch" },
+  { key:"journal_feature",     enabled:true,  desc:"Jurnal harian + absensi — aktif saat launch" },
+  { key:"grade_feature",       enabled:true,  desc:"Input nilai + deskripsi AI — aktif saat launch" },
+  { key:"teacher_chatbot",     enabled:false, desc:"Teacher Assistant chatbot (Eliza OS) — Sprint 2" },
+  { key:"pwa_offline",         enabled:false, desc:"Offline mode PWA — Sprint 2" },
+  { key:"school_dashboard",   enabled:false, desc:"Dashboard kepala sekolah — Sprint 3" },
+  { key:"prota_promes",        enabled:false, desc:"Prota & Promes AI — Sprint 2" },
+  { key:"bank_soal",           enabled:false, desc:"Bank Soal AI — Sprint 2" },
 ];
 
 const WEBHOOKS = [
@@ -84,7 +88,8 @@ const WEBHOOKS = [
   { event:"payment.failed", payload:"xendit_id: xnd_jkl012", processed:false, error:"DB timeout", time:"Kemarin" },
 ];
 
-const PLAN_C = { free:BRAND.indigo, go:BRAND.indigo, plus:BRAND.amber, sekolah:BRAND.emerald };
+// Ref: modulajar-spec-v3.jsx — plan = free | pro | school (replaces go/plus/sekolah)
+const PLAN_C = { free:BRAND.indigo, pro:BRAND.indigo, school:BRAND.emerald };
 const STATUS_C = { active:BRAND.emerald, past_due:BRAND.red, cancelled:BRAND.indigo };
 
 // ─── MINI COMPONENTS ─────────────────────────────────────────────────────────
@@ -244,7 +249,7 @@ export default function AdminPlatform() {
                 </div>
                 <div style={{ background:T.surface, border:`1px solid ${T.border}`, borderRadius:13, padding:"18px", boxShadow:T.cardShadow }}>
                   <div style={{ fontWeight:700, fontSize:13, color:T.text, marginBottom:14 }}>Distribusi Plan</div>
-                  {[{ plan:"Free", count:201, pct:64, color:T.textMuted },{ plan:"Go", count:89, pct:29, color:BRAND.indigo },{ plan:"Plus", count:22, pct:7, color:BRAND.amber }].map(p => (
+                  {[{ plan:"Free", count:201, pct:64, color:T.textMuted },{ plan:"Pro", count:89, pct:29, color:BRAND.indigo },{ plan:"School", count:22, pct:7, color:BRAND.emerald }].map(p => (
                     <div key={p.plan} style={{ marginBottom:10 }}>
                       <div style={{ display:"flex", justifyContent:"space-between", marginBottom:4 }}>
                         <span style={{ fontSize:12, color:T.textSub }}>{p.plan}</span>
@@ -263,7 +268,7 @@ export default function AdminPlatform() {
                 <div style={{ fontWeight:700, fontSize:13, color:T.text, marginBottom:14 }}>Aktivitas Terbaru</div>
                 {[
                   { icon:"👤", text:"Bu Dewi Lestari baru daftar", time:"5 menit lalu", err:false },
-                  { icon:"💳", text:"Pak Ahmad bayar Plan Go — Rp 49.000 (QRIS)", time:"23 menit lalu", err:false },
+                  { icon:"💳", text:"Pak Ahmad bayar Plan Pro — Rp 99.000 (QRIS)", time:"23 menit lalu", err:false },
                   { icon:"📄", text:"Bu Sari generate Full AI modul (Matematika Fase D)", time:"1 jam lalu", err:false },
                   { icon:"⚠️", text:"Webhook payment.failed — error DB timeout (xnd_jkl012)", time:"Kemarin", err:true },
                 ].map((a,i) => (
@@ -287,7 +292,7 @@ export default function AdminPlatform() {
               <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
                 <div style={{ background:T.surface, border:`1px solid ${T.border}`, borderRadius:13, padding:"18px", boxShadow:T.cardShadow }}>
                   <div style={{ fontWeight:700, fontSize:13, color:T.text, marginBottom:14 }}>Conversion Funnel</div>
-                  {[{ label:"Signup", count:312, pct:100, c:T.textMuted },{ label:"Buat modul pertama (Activation)", count:201, pct:64, c:BRAND.indigo },{ label:"Download / klik upgrade", count:89, pct:29, c:BRAND.amber },{ label:"Bayar (Free → Go/Plus)", count:26, pct:8, c:BRAND.emerald }].map(s => (
+                  {[{ label:"Signup", count:312, pct:100, c:T.textMuted },{ label:"Buat modul pertama (Activation)", count:201, pct:64, c:BRAND.indigo },{ label:"Download / klik upgrade", count:89, pct:29, c:BRAND.amber },{ label:"Bayar (Free → Pro/School)", count:26, pct:8, c:BRAND.emerald }].map(s => (
                     <div key={s.label} style={{ marginBottom:12 }}>
                       <div style={{ display:"flex", justifyContent:"space-between", marginBottom:4 }}>
                         <span style={{ fontSize:12, color:T.textSub }}>{s.label}</span>

@@ -53,7 +53,13 @@ const { sseRoutes } = await import("./routes/sse");
 const { pdfRoutes } = await import("./routes/pdf");
 const { billingRoutes } = await import("./routes/billing");
 const { invoiceRoutes } = await import("./routes/invoice");
-const { quotaResetCron, gracePeriodCron, quotaWarningCron, expiryCron } = await import("./routes/cron");
+const { gradesRoutes } = await import("./routes/grades");
+const { journalRoutes, attendanceRoutes } = await import("./routes/journals");
+const { schoolRoutes } = await import("./routes/schools");
+const { teachingClassRoutes } = await import("./routes/teaching-classes");
+const { quotaResetCron, gracePeriodCron, quotaWarningCron, expiryCron, journalReminderCron } = await import("./routes/cron");
+const { bankSoalRoutes } = await import("./routes/bank-soal");
+const { quizRoutes } = await import("./routes/quiz");
 
 app
   .use(authRoutes)
@@ -66,10 +72,18 @@ app
   .use(pdfRoutes)
   .use(billingRoutes)
   .use(invoiceRoutes)
+  .use(gradesRoutes)
+  .use(journalRoutes)
+  .use(attendanceRoutes)
+  .use(schoolRoutes)
+  .use(teachingClassRoutes)
   .use(quotaResetCron)
   .use(gracePeriodCron)
   .use(quotaWarningCron)
-  .use(expiryCron);
+  .use(expiryCron)
+  .use(journalReminderCron)
+  .use(bankSoalRoutes)
+  .use(quizRoutes);
 
 const PORT = parseInt(process.env["PORT"] ?? "3000", 10);
 const HOST = process.env["HOST"] ?? "0.0.0.0";
