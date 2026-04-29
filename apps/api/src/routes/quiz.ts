@@ -27,7 +27,7 @@ export const quizRoutes = new Elysia({ prefix: "quiz" })
 
     const parsed = QuizSchema.safeParse(body);
     if (!parsed.success) {
-      return new Response(JSON.stringify({ error: "invalid_body", details: parsed.error.errors }), {
+      return new Response(JSON.stringify({ error: "invalid_body", details: parsed.error.issues }), {
         status: 400, headers: { "Content-Type": "application/json" },
       });
     }
@@ -162,7 +162,7 @@ export const quizRoutes = new Elysia({ prefix: "quiz" })
     // Parse multipart: student_id, photo file (base64)
     let body: { student_id: string; photo_base64: string; quiz_attempt_id?: string };
     try {
-      body = await request.json();
+      body = await request.json() as { student_id: string; photo_base64: string; quiz_attempt_id?: string };
     } catch {
       return new Response(JSON.stringify({ error: "invalid_body" }), {
         status: 400, headers: { "Content-Type": "application/json" },
@@ -264,7 +264,7 @@ export const quizRoutes = new Elysia({ prefix: "quiz" })
 
     let body: { quiz_attempt_id: string; answers_json: Record<string, string> };
     try {
-      body = await request.json();
+      body = await request.json() as { quiz_attempt_id: string; answers_json: Record<string, string> };
     } catch {
       return new Response(JSON.stringify({ error: "invalid_body" }), {
         status: 400, headers: { "Content-Type": "application/json" },

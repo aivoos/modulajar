@@ -46,7 +46,7 @@ export const schoolRoutes = new Elysia({ prefix: "schools" })
     const userId = request.headers.get("Authorization")?.replace("Bearer ", "");
     if (!userId) { set.status = 401; return { error: "unauthorized" }; }
 
-    const body = await request.json();
+    const body = await request.json() as { email?: string; role?: string };
     const email = body["email"] as string;
     const role = (body["role"] as string) ?? "guru";
 
@@ -117,7 +117,7 @@ export const schoolRoutes = new Elysia({ prefix: "schools" })
     const userId = request.headers.get("Authorization")?.replace("Bearer ", "");
     if (!userId) { set.status = 401; return { error: "unauthorized" }; }
 
-    const body = await request.json();
+    const body = await request.json() as { token?: string };
     const token = body["token"] as string;
 
     if (!token) { set.status = 400; return { error: "token_required" }; }

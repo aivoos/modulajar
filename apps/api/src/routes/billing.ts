@@ -47,8 +47,8 @@ function getPlanPrice(plan: PlanKey, billingCycle: string): number {
 
   // Spec v3: Pro has monthly/6mo/annual; School is per-guru, annual
   if (plan === "pro") {
-    if (billingCycle === "monthly") return (p as { price_monthly_idr?: number }).price_monthly_idr ?? p.price_yearly_idr;
-    if (billingCycle === "6mo") return (p as { price_6mo_idr?: number }).price_6mo_idr ?? p.price_yearly_idr;
+    if (billingCycle === "monthly") return (p as { price_monthly_idr?: number }).price_monthly_idr ?? (p as { price_yearly_idr: number }).price_yearly_idr;
+    if (billingCycle === "6mo") return (p as { price_6mo_idr?: number }).price_6mo_idr ?? (p as { price_yearly_idr: number }).price_yearly_idr;
     return (p as { price_yearly_idr: number }).price_yearly_idr; // yearly
   }
 

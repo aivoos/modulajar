@@ -44,7 +44,7 @@ export function verifyQStashRequest(
   let providedSig = "";
   for (const part of parts) {
     const [k, v] = part.split("=");
-    if (k === "v1") { providedSig = v; break; }
+    if (k === "v1") { providedSig = v ?? ""; break; }
   }
 
   if (!providedSig) return false;

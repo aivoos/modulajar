@@ -295,7 +295,7 @@ Catatan: Bahasa Indonesia, sesuai Kurikulum Merdeka 2022.`;
 
   if (!openaiRes.ok) { set.status = 500; return { error: "ai_generation_failed" }; }
 
-  const aiResult = await openaiRes.json();
+  const aiResult = await openaiRes.json() as { choices?: Array<{ message?: { content?: string } }> };
   const rawContent = aiResult.choices?.[0]?.message?.content ?? "{}";
   let parsed: { questions: Array<{ type: string; content: string; options?: string[]; answer: string; tp_code?: string; difficulty?: string }> };
   try { parsed = JSON.parse(rawContent); } catch { set.status = 500; return { error: "ai_response_invalid" }; }

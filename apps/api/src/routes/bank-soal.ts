@@ -25,7 +25,7 @@ export const bankSoalRoutes = new Elysia({ prefix: "bank-soal" })
 
     const parsed = BankSoalSchema.safeParse(body);
     if (!parsed.success) {
-      return new Response(JSON.stringify({ error: "invalid_body", details: parsed.error.errors }), {
+      return new Response(JSON.stringify({ error: "invalid_body", details: parsed.error.issues }), {
         status: 400, headers: { "Content-Type": "application/json" },
       });
     }
