@@ -1,6 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  transpilePackages: [],
+  experimental: {
+    outputFileTracingRoot: "/app",
+  },
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "*.supabase.co" },
