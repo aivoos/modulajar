@@ -12,7 +12,102 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  ci:
+    name: CI
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "22", cache: "pnpm" }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @modulajar/api typecheck
+      - run: pnpm --filter @modulajar/api lint || true
+      - run: pnpm typecheck || true
+
   deploy-api:
+    name: Deploy API
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://api.modulajar.app
+    needs: [ci]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Bun
+        run: |
+          curl -fsSL https://github.com/oven-sh/bun/releases/download/bun-v1.3.13/bun-linux-x64-baseline.zip -o /tmp/bun.zip
+          unzip -o /tmp/bun.zip -d /usr/local/bin
+          chmod +x /usr/local/bin/bun
+      - uses: actions/setup-node@v4
+        with: { node-version: "22", cache: "pnpm" }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @modulajar/api typecheck
+      - run: pnpm --filter @modulajar/api build
+      - name: Deploy to Railway
+        run: |
+          curl -fsSL https://github.com/railwayapp/cli/releases/download/v4.44.0/railway-v4.44.0-x86_64-unknown-linux-musl.tar.gz -o /tmp/railway.tar.gz
+          tar -xzf /tmp/railway.tar.gz -C /usr/local/bin
+          chmod +x /usr/local/bin/railway
+          railway deploy --token "$RAILWAY_TOKEN" --service @modulajar/api --no-input
+      - name: Health check
+        run: |
+          sleep 15
+          for i in {1..5}; do
+            curl -sf https://api.modulajar.app/api/health && echo "API healthy" && exit 0
+            echo "Attempt $i failed, retrying..."
+            sleep 5
+          done
+          echo "API health check failed"
+          exit 1
+
+  deploy-marketing:
+    name: Deploy Marketing
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://modulajar.app
+    needs: [ci]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "22", cache: "pnpm" }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @modulajar/marketing typecheck || true
+      - run: pnpm --filter @modulajar/marketing build
+      - name: Deploy to Railway
+        run: |
+          curl -fsSL https://github.com/railwayapp/cli/releases/download/v4.44.0/railway-v4.44.0-x86_64-unknown-linux-musl.tar.gz -o /tmp/railway.tar.gz
+          tar -xzf /tmp/railway.tar.gz -C /usr/local/bin
+          chmod +x /usr/local/bin/railway
+          railway deploy --token "$RAILWAY_TOKEN" --service @modulajar/marketing --no-input
+      - name: Health check
+        run: |
+          sleep 15
+          curl -sf https://modulajar.app && echo "Marketing healthy" || exit 1
+
+  deploy-web:
+    name: Deploy Web
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://app.modulajar.app
+    needs: [ci]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "22", cache: "pnpm" }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @modulajar/web typecheck || true
+      - run: pnpm --filter @modulajar/web build
+      - name: Deploy to Railway
+        run: |
+          curl -fsSL https://github.com/railwayapp/cli/releases/download/v4.44.0/railway-v4.44.0-x86_64-unknown-linux-musl.tar.gz -o /tmp/railway.tar.gz
+          tar -xzf /tmp/railway.tar.gz -C /usr/local/bin
+          chmod +x /usr/local/bin/railway
+          railway deploy --token "$RAILWAY_TOKEN" --service modulajar/web --no-input
     name: Deploy API
     runs-on: ubuntu-latest
     environment:
