@@ -27,7 +27,7 @@ export default function BankSoalPage() {
   const [newBank, setNewBank] = useState({ title: "", subject: "", phase: "", tp_codes: "" });
 
   async function load() {
-    const { data: { user } } = await supabase.auth.getUser();
+    await supabase.auth.getUser();
     if (!user) return router.push("/login");
 
     const token = (await supabase.auth.getSession()).data.session?.access_token ?? "";
@@ -49,7 +49,7 @@ export default function BankSoalPage() {
     if (!newBank.title.trim()) return;
     setCreating(true);
 
-    const { data: { user } } = await supabase.auth.getUser();
+    await supabase.auth.getUser();
     const token = (await supabase.auth.getSession()).data.session?.access_token ?? "";
 
     const tpCodes = newBank.tp_codes

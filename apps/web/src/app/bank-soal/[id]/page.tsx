@@ -4,7 +4,6 @@ export const dynamic = 'force-dynamic';
 import { useState, useEffect, use } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
 
 interface Question {
   id: string;
@@ -56,7 +55,6 @@ export default function BankSoalDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const router = useRouter();
   const [bank, setBank] = useState<QuestionBank | null>(null);
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [loading, setLoading] = useState(true);
@@ -248,7 +246,7 @@ export default function BankSoalDetailPage({
                 </button>
               </div>
             ) : (
-              (bank.questions ?? []).map((q, i) => (
+              (bank.questions ?? []).map((q) => (
                 <div key={q.id} className="bg-[#161B27] rounded-xl border border-[#21293A] p-4">
                   <div className="flex items-start gap-3">
                     <input

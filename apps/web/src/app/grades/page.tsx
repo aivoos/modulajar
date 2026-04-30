@@ -81,7 +81,7 @@ export default function GradesPage() {
         ) : (
           <div className="bg-[#161B27] rounded-xl border border-[#21293A] overflow-hidden">
             <div className="divide-y divide-[#1A2030]">
-              {classes.map((cls, i) => (
+              {classes.map((cls) => (
                 <Link
                   key={cls.id}
                   href={`/grades/${cls.id}`}

@@ -26,7 +26,7 @@ interface Doc {
 export default function PMMPage() {
   const router = useRouter();
   const [stats, setStats] = useState<Stats | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [, setLoaded] = useState(true);
   const [generating, setGenerating] = useState(false);
 
   useEffect(() => {
@@ -55,7 +55,7 @@ export default function PMMPage() {
         moduleCount: moduleCount ?? 0,
         gradeCount: gradeCount ?? 0,
       });
-      setLoading(false);
+      setLoaded(false);
     }
     load();
   }, [router]);

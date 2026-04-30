@@ -4,7 +4,6 @@ export const dynamic = 'force-dynamic';
 import { useState, useEffect, use } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
 
 interface Question {
   id: string;
@@ -47,14 +46,11 @@ export default function QuizDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const router = useRouter();
   const [quiz, setQuiz] = useState<Quiz | null>(null);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<"questions" | "grade" | "results">("questions");
   const [uploading, setUploading] = useState<string | null>(null);
   const [grading, setGrading] = useState<string | null>(null);
-  const [selectedStudent, setSelectedStudent] = useState<string | null>(null);
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
