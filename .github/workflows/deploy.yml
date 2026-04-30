@@ -35,8 +35,10 @@ jobs:
       - name: Install Bun
         run: |
           curl -fsSL https://github.com/oven-sh/bun/releases/download/bun-v1.3.13/bun-linux-x64-baseline.zip -o /tmp/bun.zip
-          unzip -o /tmp/bun.zip -d /usr/local/bin
+          unzip -o /tmp/bun.zip -d /tmp
+          mv /tmp/bun-linux-x64-baseline/bun /usr/local/bin/bun
           chmod +x /usr/local/bin/bun
+          /usr/local/bin/bun --version
       - uses: actions/setup-node@v4
         with: { node-version: "22", cache: "pnpm" }
       - run: pnpm install --frozen-lockfile
