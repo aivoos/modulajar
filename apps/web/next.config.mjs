@@ -61,9 +61,7 @@ const withPWA = withPWAInit({
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    outputFileTracingRoot: "/app",
-  },
+  outputFileTracingRoot: "/app",
   transpilePackages: [],
 
   // Supabase and AI image optimizations
