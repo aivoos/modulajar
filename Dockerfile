@@ -2,6 +2,8 @@ FROM oven/bun:1-debian
 
 WORKDIR /app
 
+ENV PORT=8080
+
 # Copy monorepo root
 COPY ["package.json", "pnpm-lock.yaml", "pnpm-workspace.yaml", "tsconfig.base.json", "."]
 
@@ -21,12 +23,13 @@ RUN case "$RAILWAY_SERVICE_NAME" in \
       *) bun run --filter @modulajar/api build ;; \
     esac
 
-EXPOSE 3000
+EXPOSE 8080
+
 CMD [ \
   "sh", "-c", \
   "case \"$RAILWAY_SERVICE_NAME\" in \
-    *marketing*) bun run --filter @modulajar/marketing start ;; \
-    *web*) bun run --filter @modulajar/web start ;; \
-    *) bun run --filter @modulajar/api start ;; \
+    *marketing*) cd apps/marketing && bun run start ;; \
+    *web*) cd apps/web && bun run start ;; \
+    *) PORT=8080 bun run --filter @modulajar/api start ;; \
   esac" \
 ]
