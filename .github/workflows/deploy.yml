@@ -1,0 +1,87 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+env:
+  RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy-api:
+    name: Deploy API
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://api.modulajar.app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "22", cache: "pnpm" }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @modulajar/api typecheck
+      - run: pnpm --filter @modulajar/api build
+      - name: Deploy to Railway
+        run: |
+          curl -fsSL https://railway.app/nixpid/release/latest/download/amd64 -o railway
+          chmod +x railway
+          ./railway deploy --token "$RAILWAY_TOKEN" --service @modulajar/api --no-input
+      - name: Health check
+        run: |
+          sleep 15
+          for i in {1..5}; do
+            curl -sf https://api.modulajar.app/api/health && echo "API healthy" && exit 0
+            echo "Attempt $i failed, retrying..."
+            sleep 5
+          done
+          echo "API health check failed"
+          exit 1
+
+  deploy-marketing:
+    name: Deploy Marketing
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://modulajar.app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "22", cache: "pnpm" }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @modulajar/marketing typecheck || true
+      - run: pnpm --filter @modulajar/marketing build
+      - name: Deploy to Railway
+        run: |
+          curl -fsSL https://railway.app/nixpid/release/latest/download/amd64 -o railway
+          chmod +x railway
+          ./railway deploy --token "$RAILWAY_TOKEN" --service @modulajar/marketing --no-input
+      - name: Health check
+        run: |
+          sleep 15
+          curl -sf https://modulajar.app && echo "Marketing healthy" || exit 1
+
+  deploy-web:
+    name: Deploy Web
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://app.modulajar.app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "22", cache: "pnpm" }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @modulajar/web typecheck || true
+      - run: pnpm --filter @modulajar/web build
+      - name: Deploy to Railway
+        run: |
+          curl -fsSL https://railway.app/nixpid/release/latest/download/amd64 -o railway
+          chmod +x railway
+          ./railway deploy --token "$RAILWAY_TOKEN" --service modulajar/web --no-input
