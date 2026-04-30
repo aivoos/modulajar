@@ -58,8 +58,11 @@ async function handleXenditWebhook(payload: Record<string, unknown>) {
       const billingCycle = parts[3] as string; // "monthly" or "yearly"
 
       if (plan && ["go", "plus", "sekolah"].includes(plan)) {
-        const limits = PLAN_LIMITS[plan as keyof typeof PLAN_LIMITS];
-        const aiLimit = limits?.full_ai_per_month ?? 0;
+        // Map legacy plan names to spec v3 names
+        const planMap: Record<string, string> = { go: "pro", plus: "pro", sekolah: "school" };
+        const mappedPlan = planMap[plan] ?? plan;
+        const limits = PLAN_LIMITS[mappedPlan as keyof typeof PLAN_LIMITS] as { ai_quota_per_month?: number } | undefined;
+        const aiLimit = limits?.ai_quota_per_month ?? 30;
 
         // Update or create subscription
         const { data: existing } = await supabase
@@ -70,7 +73,7 @@ async function handleXenditWebhook(payload: Record<string, unknown>) {
 
         if (existing) {
           await supabase.from("subscriptions").update({
-            plan,
+            plan: mappedPlan,
             billing_cycle: billingCycle,
             status: "active",
             ai_quota_limit: aiLimit,
@@ -82,7 +85,7 @@ async function handleXenditWebhook(payload: Record<string, unknown>) {
         } else {
           await supabase.from("subscriptions").insert({
             user_id: xenditRef.split("_")[1] ?? (data["user_id"] as string),
-            plan,
+            plan: mappedPlan,
             billing_cycle: billingCycle,
             status: "active",
             ai_quota_limit: aiLimit,

@@ -2,9 +2,15 @@
 // Ref: modulajar-master-v3.jsx — SCHEMA section (12 migrations, 25+ tables)
 // These types MUST match the actual DB schema — do not add types that don't exist in migrations
 
-export type Plan = "free" | "go" | "plus" | "sekolah";
+// Spec v3: 3-tier plan
+// DB may contain legacy values (go, plus, sekolah) for existing subscriptions
+// New subscriptions use: free | pro | school
+export type Plan = "free" | "pro" | "school";
+// Legacy DB values (for backward compat with existing subscriptions)
+export type LegacyPlan = "go" | "plus" | "sekolah";
 export type UserRole = "guru" | "kepala_sekolah" | "admin" | "super_admin";
-export type SchoolPlan = "free" | "go" | "plus" | "sekolah";
+// Legacy: sekolah plan stored as "sekolah" in DB
+export type SchoolPlan = "free" | "pro" | "school";
 export type Kurikulum = "K13" | "MERDEKA_2022" | "MERDEKA_2025";
 export type Fase = "A" | "B" | "C" | "D" | "E" | "F";
 export type CurriculumStatus = "draft" | "active" | "deprecated";
@@ -20,7 +26,8 @@ export type DifficultyLevel = "mudah" | "sedang" | "sulit";
 export type JobType = "modul_generate" | "modul_assist" | "prota_promes" | "bank_soal" | "deskripsi_nilai" | "refleksi" | "bukti_kinerja" | "prota_agent";
 export type JobStatus = "queued" | "running" | "done" | "failed";
 export type AgentName = "orchestrator" | "cp" | "tp" | "atp" | "activity" | "asesmen" | "validator" | "prota" | "promes" | "soal" | "deskripsi" | "refleksi";
-export type BillingCycle = "monthly" | "yearly";
+// Spec v3: Annual-only. No monthly billing cycle.
+export type BillingCycle = "yearly"; // only valid value going forward
 export type SubscriptionStatus = "active" | "past_due" | "cancelled" | "trialing";
 export type PaymentStatus = "paid" | "pending" | "failed" | "expired";
 export type NotificationType = "migration_ready" | "quota_warning" | "payment_success" | "payment_failed" | "export_ready" | "journal_reminder";

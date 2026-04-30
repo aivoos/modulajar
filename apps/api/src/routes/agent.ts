@@ -29,7 +29,7 @@ export const agentRoutes = new Elysia({ prefix: "agent" })
     }
 
     const limits = PLAN_LIMITS[sub.plan as keyof typeof PLAN_LIMITS];
-    const limit = limits?.full_ai_per_month ?? 0;
+    const limit = limits ? ("ai_quota_per_month" in limits ? (limits as { ai_quota_per_month: number }).ai_quota_per_month : -1) : 0;
     const used = sub.ai_quota_used ?? 0;
     const available = limit < 0 ? -1 : Math.max(0, limit - used);
 
@@ -75,7 +75,7 @@ export const agentRoutes = new Elysia({ prefix: "agent" })
 
     // ── Quota check ──────────────────────────────────────────────
     const limits = PLAN_LIMITS[sub.plan as keyof typeof PLAN_LIMITS];
-    const monthlyLimit = limits?.full_ai_per_month ?? 0;
+    const monthlyLimit = limits ? ("ai_quota_per_month" in limits ? (limits as { ai_quota_per_month: number }).ai_quota_per_month : -1) : 0;
     const used = sub.ai_quota_used ?? 0;
     const available = monthlyLimit < 0 ? Infinity : monthlyLimit - used;
 
@@ -206,7 +206,125 @@ export const agentRoutes = new Elysia({ prefix: "agent" })
       .order("step_order", { ascending: true });
 
     return { job, steps: steps ?? [] };
+  })
+
+// POST /api/agent/generate-questions — Bank Soal AI
+.post("/generate-questions", async ({ request, set }) => {
+  const userId = getUserId(request);
+  if (!userId) { set.status = 401; return { error: "unauthorized" }; }
+
+  const supabase = createAdminClient();
+  const raw = await request.json().catch(() => ({}));
+  const { question_bank_id, tp_codes, count, type, difficulty, subject, phase } = raw as {
+    question_bank_id?: string;
+    tp_codes?: string[];
+    count?: number;
+    type?: "PG" | "isian" | "uraian" | "benar_salah";
+    difficulty?: "mudah" | "sedang" | "sulit";
+    subject?: string;
+    phase?: string;
+  };
+
+  if (!question_bank_id) { set.status = 400; return { error: "question_bank_id required" }; }
+
+  const actualCount = Math.min(Math.max(count ?? 10, 1), 50);
+  const questionType = type ?? "PG";
+  const diff = difficulty ?? "sedang";
+
+  const { data: sub } = await supabase
+    .from("subscriptions")
+    .select("plan, ai_quota_used, ai_quota_limit")
+    .eq("user_id", userId)
+    .single();
+
+  if (!sub || sub.plan === "free") {
+    set.status = 403;
+    return { error: "subscription_required" };
+  }
+
+  const used = sub.ai_quota_used ?? 0;
+  const limit = sub.ai_quota_limit ?? 30;
+  if (used >= limit) {
+    set.status = 403;
+    return { error: "quota_exhausted", detail: "AI quota bulan ini sudah habis." };
+  }
+
+  const typeLabel: Record<string, string> = {
+    PG: "Pilihan Ganda (4 opsi A-D)",
+    isian: "Isian Singkat",
+    uraian: "Uraian (2-5 kalimat)",
+    benar_salah: "Benar/Salah",
+  };
+
+  const prompt = `Buat ${actualCount} soal ${typeLabel[questionType] ?? questionType} tingkat ${diff} untuk ${subject || "mata pelajaran umum"}${phase ? ` (Fase ${phase})` : ""}.
+
+TP yang dipakai: ${(tp_codes ?? []).join(", ") || "TP tidak ditentukan"}
+
+Format JSON:
+{
+  "questions": [
+    {
+      "type": "${questionType}",
+      "content": "Pertanyaan yang jelas",
+      "options": ${questionType === "PG" ? '["A. ...", "B. ...", "C. ...", "D. ..."]' : "[]"},
+      "answer": "jawaban benar",
+      "tp_code": "${(tp_codes ?? ["TP.1"])[0]}",
+      "difficulty": "${diff}"
+    }
+  ]
+}
+
+Catatan: Bahasa Indonesia, sesuai Kurikulum Merdeka 2022.`;
+
+  const openaiRes = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${process.env["OPENAI_API_KEY"]}`,
+    },
+    body: JSON.stringify({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: "Kamu guru ahli Kurikulum Merdeka Indonesia." },
+        { role: "user", content: prompt },
+      ],
+      response_format: { type: "json_object" },
+      temperature: 0.7,
+    }),
   });
+
+  if (!openaiRes.ok) { set.status = 500; return { error: "ai_generation_failed" }; }
+
+  const aiResult = await openaiRes.json() as { choices?: Array<{ message?: { content?: string } }> };
+  const rawContent = aiResult.choices?.[0]?.message?.content ?? "{}";
+  let parsed: { questions: Array<{ type: string; content: string; options?: string[]; answer: string; tp_code?: string; difficulty?: string }> };
+  try { parsed = JSON.parse(rawContent); } catch { set.status = 500; return { error: "ai_response_invalid" }; }
+
+  const generatedQuestions = parsed.questions ?? [];
+  if (generatedQuestions.length === 0) { set.status = 500; return { error: "no_questions_generated" }; }
+
+  const questionsToInsert = generatedQuestions.map((q) => ({
+    user_id: userId,
+    module_id: null,
+    type: q.type as "PG" | "isian" | "uraian" | "benar_salah",
+    content: q.content,
+    options: q.options ?? [],
+    answer: q.answer,
+    tp_code: q.tp_code ?? (tp_codes?.[0] ?? null),
+    difficulty: diff as "mudah" | "sedang" | "sulit",
+  }));
+
+  const { data: inserted, error: insertError } = await supabase
+    .from("questions")
+    .insert(questionsToInsert)
+    .select("id, type, content, options, answer, tp_code, difficulty");
+
+  if (insertError) { set.status = 500; return { error: "db_insert_failed" }; }
+
+  await supabase.from("subscriptions").update({ ai_quota_used: used + 1 }).eq("user_id", userId);
+
+  return { generated: inserted?.length ?? 0, questions: inserted };
+});
 // ─────────────────────────────────────────────────────────────────
 
 // Background dispatcher — runs orchestrator without blocking HTTP response
@@ -318,3 +436,4 @@ async function dispatchGeneration(
     }).eq("id", jobId);
   }
 }
+

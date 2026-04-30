@@ -33,28 +33,41 @@ const DARK = {
 };
 
 // ─── DATA ─────────────────────────────────────────────────────────────────────
+// Ref: modulajar-spec-v3.jsx — SSOT Pricing
+// Free: 3× lifetime trial | Pro: Rp 99k/mo, Rp 494k/6mo, Rp 790k/thn, 30× AI gen/bulan | Sekolah: tiered per-guru
 const PLANS = [
   {
     key:"free", label:"Free", price:0, yearly:0,
-    desc:"Untuk yang baru mulai",
-    features:["3 modul ajar per bulan","Scratch + AI Assist","Preview modul di app","Akses curated library"],
-    locked:["Download PDF","Full AI Generate","Jurnal mengajar","Input nilai"],
+    desc:"Untuk coba",
+    features:["3× AI generate modul (lifetime trial)","Preview di aplikasi","Akses curated library (baca saja)"],
+    locked:["Download PDF","Jurnal Harian","Input Nilai","Bukti PMM"],
     cta:"Mulai Gratis", featured:false,
+    limitsNote:"3× lifetime — setelah itu upgrade",
   },
   {
-    key:"go", label:"Go", price:49000, yearly:490000,
-    desc:"Untuk guru yang aktif mengajar",
+    key:"pro", label:"Pro", price:99000, price6mo:494000, priceYearly:790000, monthlyGen:30,
+    desc:"Untuk guru aktif",
     badge:"Paling Populer",
-    features:["10 Full AI modul per bulan","Download PDF bersih","Jurnal mengajar harian","Absensi siswa","Input nilai + rekap KKTP","Share link publik"],
+    features:["30× AI generate modul/bulan (GPT-4o mini)","Download PDF (A4, siap cetak)","Jurnal Harian (harian, 60 detik)","Absensi siswa per kelas","Input Nilai + Deskripsi AI","Paket Bukti PMM (ZIP untuk upload ke PMM)","Push notification reminder jurnal"],
     locked:[],
-    cta:"Mulai Go", featured:true,
+    cta:"Berlangganan Pro", featured:true,
+    anchor:"Rp 99.000/bulan — lebih murah dari segelas kopi",
   },
   {
-    key:"plus", label:"Plus", price:99000, yearly:990000,
-    desc:"Untuk guru yang butuh bukti PMM",
-    features:["Semua fitur Go","Unlimited AI semua operasi","Prota & Promes AI","Bank Soal AI","Paket Bukti PMM (ZIP)","Refleksi Pembelajaran AI"],
+    key:"school", label:"Sekolah", pricePerGuruMin:49000,
+    desc:"Untuk sekolah (B2B)",
+    tiers:[
+      { label:"3-10 guru",   price:89000, per:"guru/bulan" },
+      { label:"11-25 guru",  price:79000, per:"guru/bulan" },
+      { label:"26-50 guru",  price:69000, per:"guru/bulan" },
+      { label:"51-100 guru", price:59000, per:"guru/bulan" },
+      { label:"100+ guru",   price:49000, per:"guru/bulan" },
+    ],
+    minGuru:3,
+    features:["Semua fitur Pro untuk semua guru","Dashboard Kepala Sekolah","Upload master jadwal sekolah","Laporan compliance kurikulum semua guru","Invoice resmi BOS (NPWP, PPN 11%)","Onboarding guru oleh tim kami","School invite: kepala sekolah invite guru"],
     locked:[],
-    cta:"Segera Hadir", featured:false, soon:true,
+    cta:"Hubungi Kami", featured:false,
+    anchor:"Mulai Rp 49.000/guru/bulan — 51% discount dari Pro",
   },
 ];
 
@@ -65,20 +78,23 @@ const STEPS = [
 ];
 
 const FAQS = [
-  { q:"Apakah Modulajar sesuai Kurikulum Merdeka?", a:"Ya, Modulajar menggunakan CP resmi dari BSKAP Kemendikbud. Semua modul mengikuti struktur: CP → TP → ATP → Modul Ajar." },
-  { q:"Berapa lama AI membuat satu modul?", a:"Rata-rata 30–60 detik untuk modul lengkap. Kamu bisa memantau progress 6 langkah secara real-time." },
-  { q:"Apakah perlu pengalaman teknologi?", a:"Tidak. Kalau bisa pakai WhatsApp, kamu bisa pakai Modulajar. Dirancang khusus untuk guru, bukan developer." },
-  { q:"Cara bayar untuk Plan Go?", a:"QRIS, GoPay, OVO, Dana, ShopeePay, VA BCA/Mandiri/BNI, Indomaret, Alfamart. Pilih yang paling mudah." },
-  { q:"Apakah data modul saya aman?", a:"Data tersimpan di server AWS Singapore via Supabase. Konten modul dikirim ke AI hanya saat generate, tidak disimpan Anthropic." },
-  { q:"Bisa dibatalkan kapan saja?", a:"Ya, self-serve dari pengaturan akun. Akses tetap aktif sampai akhir periode yang sudah dibayar." },
-  { q:"Apa itu Bukti Kinerja PMM?", a:"Plan Plus (segera hadir) menyediakan ZIP berisi rekap jurnal, nilai, dan refleksi siap upload ke Platform Merdeka Mengajar. Modulajar adalah companion PMM, bukan pengganti." },
+  // Ref: modulajar-spec-v3.jsx — FAQ aligned with spec v3
+  { q:"Apakah Modulajar sesuai Kurikulum Merdeka?", a:"Ya. CP, TP, dan ATP dari BSKAP Kemendikbud. AI agent menyusun modul sesuai struktur Kurikulum Merdeka resmi." },
+  { q:"Berapa lama AI membuat satu modul?", a:"Rata-rata 30–60 detik untuk modul lengkap (CP→TP→ATP→Kegiatan→Asesmen). Kamu bisa pantau 6 langkah realtime." },
+  { q:"Apakah perlu pengalaman teknologi?", a:"Tidak. Dirancang untuk guru Indonesia. Kalau bisa pakai WhatsApp, kamu bisa pakai Modulajar." },
+  { q:"Bagaimana cara bayar?", a:"QRIS, GoPay, OVO, Dana, ShopeePay, VA BCA/Mandiri/BNI, Indomaret, Alfamart. Annual billing — satu keputusan per tahun." },
+  { q:"Apakah data modul saya aman?", a:"Data tersimpan di Supabase (AWS Singapore). Tidak ada model yang train dari data kamu." },
+  { q:"Bisa dibatalkan kapan saja?", a:"Ya. Cancel anytime — akses tetap aktif sampai akhir periode. Tidak ada biaya tersembunyi." },
+  { q:"Apa itu Bukti Kinerja PMM?", a:"ZIP berisi rekap jurnal + nilai + modul + refleksi siap upload ke Platform Merdeka Mengajar. 1 klik." },
+  { q:"Berapa kuota AI per bulan?", a:"Plan Pro: 30× AI generate/bulan. Plan Sekolah: 30×/guru/bulan. Top-up Rp 10.000 = +3 modul." },
 ];
 
 const COMING = [
-  { icon:"📓", text:"Jurnal Mengajar Harian (offline)" },
-  { icon:"📊", text:"Input Nilai + Deskripsi AI" },
-  { icon:"📋", text:"Paket Bukti Kinerja PMM" },
-  { icon:"🏫", text:"Plan Sekolah — Dashboard Kepsek" },
+  // Ref: modulajar-spec-v3.jsx — Sprint 2+
+  { icon:"🤖", text:"Teacher Assistant Chatbot (Eliza OS)" },
+  { icon:"📱", text:"PWA Offline Mode" },
+  { icon:"📊", text:"Prota & Promes AI" },
+  { icon:"📝", text:"Bank Soal AI" },
 ];
 
 const SUBJECTS = ["Matematika","IPA","IPS","Bahasa Indonesia","Bahasa Inggris","PPKN","Seni Budaya","PJOK","Informatika"];
@@ -94,7 +110,7 @@ const AI_STEPS = [
 
 export default function MarketingPage() {
   const [dark, setDark] = useState(false);
-  const [billing, setBilling] = useState("monthly");
+  const [billing, setBilling] = useState("monthly"); // "monthly" | "6mo" | "yearly"
   const [openFaq, setOpenFaq] = useState(null);
   const [navSolid, setNavSolid] = useState(false);
   const [count, setCount] = useState(0);
@@ -275,61 +291,121 @@ export default function MarketingPage() {
       </div>
 
       {/* PRICING */}
+      {/* Ref: modulajar-spec-v3.jsx — SSOT Pricing: free | pro (monthly/6mo/annual) | sekolah (tiered per-guru) */}
       <div id="harga" style={{ padding:"96px 24px", background:T.bg }}>
         <div style={{ maxWidth:1020, margin:"0 auto" }}>
           <div style={{ textAlign:"center", marginBottom:44 }}>
             <span style={{ fontSize:12, fontWeight:700, color:BRAND.indigo, letterSpacing:2, textTransform:"uppercase" }}>Harga</span>
             <h2 style={{ fontSize:"clamp(28px,4vw,44px)", fontWeight:800, marginTop:8, letterSpacing:-1 }}>Harga kopi seminggu, hemat 10+ jam</h2>
             <p style={{ color:T.textSub, marginTop:6, fontSize:14 }}>PPN 11% sudah termasuk di semua harga</p>
+            {/* Billing cycle toggle — applies to Pro */}
             <div style={{ display:"inline-flex", background:T.bgAlt, borderRadius:10, padding:4, marginTop:18, gap:2, border:`1px solid ${T.border}` }}>
-              {["monthly","yearly"].map(b => (
-                <button key={b} onClick={()=>setBilling(b)} style={{ padding:"7px 18px", borderRadius:8, border:"none", background:billing===b?T.surface:"transparent", boxShadow:billing===b?T.cardShadow:"none", fontWeight:600, fontSize:13, cursor:"pointer", color:T.text, fontFamily:"inherit", transition:"all .2s" }}>
-                  {b==="monthly"?"Bulanan":<>Tahunan <span style={{ fontSize:11, color:BRAND.emerald, fontWeight:700 }}>Hemat 2 bln</span></>}
+              {["monthly","6mo","yearly"].map(b => (
+                <button key={b} onClick={()=>setBilling(b)} style={{ padding:"7px 16px", borderRadius:8, border:"none", background:billing===b?T.surface:"transparent", boxShadow:billing===b?T.cardShadow:"none", fontWeight:600, fontSize:12, cursor:"pointer", color:T.text, fontFamily:"inherit", transition:"all .2s" }}>
+                  {b==="monthly"?"Bulanan":b==="6mo"?"6 Bulan":<>Tahunan <span style={{ fontSize:10, color:BRAND.emerald, fontWeight:700 }}>Hemat 2 bln</span></>}
                 </button>
               ))}
             </div>
           </div>
 
           <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(272px,1fr))", gap:16, alignItems:"stretch" }}>
-            {PLANS.map(plan => (
+            {PLANS.map(plan => {
+              const isPro = plan.key === "pro";
+              const isSchool = plan.key === "school";
+              const isFeatured = isPro;
+              // Price display per billing cycle
+              const priceDisplay = isSchool ? null : (() => {
+                if (plan.price === 0) return { main:"Gratis", sub:null, alt:null };
+                const p = billing==="monthly" ? plan.price : billing==="6mo" ? (plan.price6mo ?? plan.price) : (plan.priceYearly ?? plan.price);
+                const sub = billing==="monthly" ? null : billing==="6mo" ? `/ 6 bulan` : `/ tahun`;
+                const alt = billing==="monthly" && plan.price6mo
+                  ? <>atau <strong>Rp {plan.price6mo.toLocaleString("id-ID")}</strong>/6bln · <strong>Rp {(plan.priceYearly ?? 0).toLocaleString("id-ID")}</strong>/thn</>
+                  : billing==="6mo"
+                  ? <>atau <strong>Rp {plan.price.toLocaleString("id-ID")}</strong>/bln · <strong>Rp {(plan.priceYearly ?? 0).toLocaleString("id-ID")}</strong>/thn</>
+                  : billing==="yearly" && plan.price6mo
+                  ? <>Rp {plan.price6mo.toLocaleString("id-ID")}/6bln · Rp {plan.price.toLocaleString("id-ID")}/bln</>
+                  : null;
+                return { main:`Rp ${p.toLocaleString("id-ID")}`, sub, alt };
+              })();
+              return (
               <div key={plan.key} className="hov-card" style={{
-                background: plan.featured ? BRAND.indigo : T.surface,
-                border: `2px solid ${plan.featured ? BRAND.indigo : plan.key==="plus" ? (dark?"rgba(245,158,11,.3)":BRAND.amber+"55") : T.border}`,
+                background: isFeatured ? BRAND.indigo : T.surface,
+                border: `2px solid ${isFeatured ? BRAND.indigo : isSchool ? BRAND.emerald : T.border}`,
                 borderRadius:20, padding:"26px 22px", position:"relative", overflow:"hidden",
-                boxShadow: plan.featured ? "0 12px 40px rgba(79,70,229,.35)" : T.cardShadow,
+                boxShadow: isFeatured ? "0 12px 40px rgba(79,70,229,.35)" : T.cardShadow,
               }}>
                 {plan.badge && <div style={{ position:"absolute", top:14, right:14, background:BRAND.amber, color:"#1A1200", fontSize:10, fontWeight:700, padding:"2px 10px", borderRadius:99 }}>{plan.badge}</div>}
                 <div style={{ marginBottom:18 }}>
-                  <div style={{ fontWeight:800, fontSize:19, color:plan.featured?"#FFF":T.text }}>{plan.label}</div>
-                  <div style={{ fontSize:13, color:plan.featured?"rgba(255,255,255,.65)":T.textSub, marginTop:3 }}>{plan.desc}</div>
+                  <div style={{ fontWeight:800, fontSize:19, color:isFeatured?"#FFF":T.text }}>{plan.label}</div>
+                  <div style={{ fontSize:13, color:isFeatured?"rgba(255,255,255,.65)":T.textSub, marginTop:3 }}>{plan.desc}</div>
                 </div>
+                {/* Price block */}
                 <div style={{ marginBottom:22 }}>
-                  <span style={{ fontSize:34, fontWeight:900, color:plan.featured?"#FFF":BRAND.indigo }}>
-                    {plan.price===0?"Gratis":"Rp "+(billing==="monthly"?plan.price:Math.floor(plan.yearly/12)).toLocaleString("id-ID")}
-                  </span>
-                  {plan.price>0 && <span style={{ fontSize:14, color:plan.featured?"rgba(255,255,255,.55)":T.textMuted }}>/bulan</span>}
-                  {plan.price>0 && billing==="yearly" && <div style={{ fontSize:12, color:plan.featured?"rgba(255,255,255,.5)":T.textMuted, marginTop:1 }}>Rp {plan.yearly.toLocaleString("id-ID")}/tahun</div>}
+                  {!isSchool && (
+                    <span style={{ fontSize:isFeatured?28:34, fontWeight:900, color:isFeatured?"#FFF":BRAND.indigo }}>
+                      {priceDisplay?.main}
+                    </span>
+                  )}
+                  {!isSchool && priceDisplay?.sub && <span style={{ fontSize:14, color:isFeatured?"rgba(255,255,255,.55)":T.textMuted }}>{priceDisplay.sub}</span>}
+                  {!isSchool && priceDisplay?.alt && <div style={{ fontSize:11, color:isFeatured?"rgba(255,255,255,.5)":T.textMuted, marginTop:4, lineHeight:1.5 }}>{priceDisplay.alt}</div>}
+                  {/* School tier table */}
+                  {isSchool && plan.tiers && (
+                    <div style={{ fontSize:12 }}>
+                      {plan.tiers.map(tier => (
+                        <div key={tier.label} style={{ display:"flex", justifyContent:"space-between", padding:"3px 0", borderBottom:`1px solid ${dark?"rgba(255,255,255,.08)":"#E2E8F0"}`, color:isFeatured?"rgba(255,255,255,.8)":T.text }}>
+                          <span>{tier.label}</span>
+                          <span style={{ fontWeight:700 }}>Rp {tier.price.toLocaleString("id-ID")}<span style={{ fontWeight:400, opacity:.7 }}>/{tier.per}</span></span>
+                        </div>
+                      ))}
+                      <div style={{ fontSize:11, color:isFeatured?"rgba(255,255,255,.5)":T.textMuted, marginTop:6 }}>Minimum {plan.minGuru} guru · Annual billing</div>
+                    </div>
+                  )}
                 </div>
+                {plan.anchor && (
+                  <div style={{ fontSize:11, color:isFeatured?"rgba(255,255,255,.7)":BRAND.indigo, background:isFeatured?"rgba(255,255,255,.1)":BRAND.indigoLight, padding:"5px 10px", borderRadius:7, marginBottom:16 }}>
+                    {plan.anchor}
+                  </div>
+                )}
                 <div style={{ marginBottom:22 }}>
                   {plan.features.map(f => (
                     <div key={f} style={{ display:"flex", gap:8, marginBottom:7 }}>
-                      <span style={{ color:plan.featured?BRAND.amber:BRAND.emerald, fontWeight:700, fontSize:13, flexShrink:0 }}>✓</span>
-                      <span style={{ fontSize:13, color:plan.featured?"rgba(255,255,255,.85)":T.text }}>{f}</span>
+                      <span style={{ color:isFeatured?BRAND.amber:BRAND.emerald, fontWeight:700, fontSize:13, flexShrink:0 }}>✓</span>
+                      <span style={{ fontSize:13, color:isFeatured?"rgba(255,255,255,.85)":T.text }}>{f}</span>
                     </div>
                   ))}
                   {plan.locked.map(f => (
                     <div key={f} style={{ display:"flex", gap:8, marginBottom:7 }}>
-                      <span style={{ color:plan.featured?"rgba(255,255,255,.2)":T.textMuted, fontSize:13, flexShrink:0 }}>–</span>
-                      <span style={{ fontSize:13, color:plan.featured?"rgba(255,255,255,.3)":T.textMuted }}>{f}</span>
+                      <span style={{ color:isFeatured?"rgba(255,255,255,.2)":T.textMuted, fontSize:13, flexShrink:0 }}>–</span>
+                      <span style={{ fontSize:13, color:isFeatured?"rgba(255,255,255,.3)":T.textMuted }}>{f}</span>
                     </div>
                   ))}
+                  {plan.limitsNote && (
+                    <div style={{ fontSize:11, color:BRAND.red, background:BRAND.redLight, padding:"5px 8px", borderRadius:6, marginTop:6 }}>
+                      ⚠️ {plan.limitsNote}
+                    </div>
+                  )}
                 </div>
-                <button className="hov-btn" style={{ width:"100%", padding:13, borderRadius:12, background:plan.featured?BRAND.amber:plan.key==="plus"?(dark?"rgba(245,158,11,.12)":BRAND.amberLight):(dark?"rgba(79,70,229,.12)":BRAND.indigoLight), color:plan.featured?"#1A1200":plan.key==="plus"?BRAND.amber:BRAND.indigo, border:`1.5px solid ${plan.featured?BRAND.amber:plan.key==="plus"?BRAND.amber+"55":BRAND.indigo+"44"}`, fontSize:14, fontWeight:700, cursor:plan.soon?"default":"pointer", opacity:plan.soon?.75:1, fontFamily:"inherit" }}>
+                <button className="hov-btn" style={{
+                  width:"100%", padding:13, borderRadius:12,
+                  background:plan.key==="school"?BRAND.emerald:isFeatured?BRAND.amber:(dark?"rgba(79,70,229,.12)":BRAND.indigoLight),
+                  color:plan.key==="school"?"#FFF":isFeatured?"#1A1200":BRAND.indigo,
+                  border:`1.5px solid ${plan.key==="school"?BRAND.emerald:isFeatured?BRAND.amber:BRAND.indigo+"44"}`,
+                  fontSize:14, fontWeight:700, cursor:"pointer", fontFamily:"inherit"
+                }}>
                   {plan.cta}
                 </button>
               </div>
-            ))}
+              );
+            })}
           </div>
+
+          <div style={{ textAlign:"center", marginTop:20, padding:"12px 20px", background:dark?"rgba(245,158,11,.08)":BRAND.amberLight, borderRadius:12, border:`1px solid ${BRAND.amber}33` }}>
+            <span style={{ fontSize:13, color:T.text }}>💡 Habis kuota? <strong>Top-up Rp 10.000 = +3 modul AI</strong> — tanpa ganti plan</span>
+          </div>
+        </div>
+      </div>
+
+      {/* COMING SOON */}
 
           <div style={{ textAlign:"center", marginTop:20, padding:"12px 20px", background:dark?"rgba(245,158,11,.08)":BRAND.amberLight, borderRadius:12, border:`1px solid ${BRAND.amber}33` }}>
             <span style={{ fontSize:13, color:T.text }}>💡 Habis quota? <strong>Top-up Rp 5.000 = +3 modul Full AI</strong> — tanpa ganti plan</span>

@@ -35,28 +35,32 @@ const ARTICLES = [
 <h2>Panduan Berlangganan Modulajar</h2>
 
 <h3>Paket Berlangganan</h3>
-<p>Modulajar menyediakan 4 paket:</p>
+<p>Modulajar menyediakan 3 paket:</p>
 <ul>
-  <li><strong>Free</strong> — 2 modul/bulan, tidak bisa download PDF</li>
-  <li><strong>Go</strong> — 10 modul/bulan + PDF tanpa watermark — Rp 49.000/bulan</li>
-  <li><strong>Plus</strong> — 20 modul/bulan + semua fitur — Rp 99.000/bulan</li>
-  <li><strong>Sekolah</strong> — Paket sekolah untuk minimum 6 guru — Rp 79.000/guru/bulan</li>
+  <li><strong>Free</strong> — 3× generate AI (lifetime), tidak bisa download PDF</li>
+  <li><strong>Pro</strong> — Unlimited AI generate — Rp 249.000/tahun (ekuivalen Rp 41.500/bulan)</li>
+  <li><strong>Sekolah</strong> — Unlimited untuk semua guru (maks 30), Rp 1.499.000/tahun</li>
 </ul>
+
+<h3>Semua plan tahunan (annual-only)</h3>
+<p>Spec v3: semua plan tahunan. Tidak ada pilihan bulanan. Pro juga tersedia Rp 149.000/6 bulan. Ini membuat keputusan lebih mudah — satu keputusan per tahun, bukan 12.</p>
 
 <h3>Cara Upgrade</h3>
 <ol>
   <li>Buka Pengaturan → Langganan</li>
-  <li>Pilih paket yang diinginkan (bulanan atau tahunan)</li>
-  <li>Klik "Pilih Plan"</li>
-  <li>Selesaikan pembayaran via QRIS, GoPay, OVO, Dana, VA BCA/Mandiri/BNI/BRI, Indomaret, atau Alfamart</li>
-  <li>Setelah berhasil, paket langsung aktif dan kuota bertambah</li>
+  <li>Pilih paket yang diinginkan</li>
+  <li>Selesaikan pembayaran via QRIS, GoPay, OVO, Dana, VA BCA/Mandiri/BNI/BRI</li>
+  <li>Setelah berhasil, paket langsung aktif</li>
 </ol>
 
 <h3>Pembayaran Gagal?</h3>
-<p>Jika pembayaran gagal atau expired, Anda akan mendapat grace period 3 hari sebelum akses ditangguhkan. Segera selesaikan pembayaran untuk menghindari gangguan.</p>
+<p>Jika pembayaran gagal atau expired, Anda mendapat <strong>grace period 14 hari</strong> sebelum akses ditangguhkan. Segera selesaikan pembayaran untuk menghindari gangguan.</p>
 
 <h3>Invoice dan Faktur</h3>
-<p>Invoice PDF otomatis dikirim ke email setelah pembayaran berhasil. Untuk invoice BOS (Sekolah), silakan hubungi hello@modulajar.app.</p>
+<p>Invoice PDF otomatis dikirim ke email setelah pembayaran berhasil. Plan Sekolah mendukung invoice BOS resmi dengan NPWP dan PPN 11%.</p>
+
+<h3>Referral</h3>
+<p>Dapat 10% dari pembayaran pertama teman yang Anda ajak, plus 5% recurring selama 12 bulan. Pencairan mingguan, minimal Rp 50.000.</p>
     `.trim(),
   },
   {
@@ -142,7 +146,7 @@ const ARTICLES = [
 <p>AI membantu mempercepat pembuatan modul, tetapi hasilnya tetap harus direview oleh guru sebelum digunakan. AI dapat membuat kesalahan atau menggeneralisasi. Selalu проверка against kurikulum resmi dan konteks kelas Anda.</p>
 
 <h3>Berapa biaya menggunakan Modulajar?</h3>
-<p>Plan Free: gratis 2 modul/bulan. Plan Go: Rp 49.000/bulan (10 modul). Plan Plus: Rp 99.000/bulan (20 modul). Plan Sekolah: Rp 79.000/guru/bulan (min 6 guru).</p>
+<p>Plan Free: gratis 3× generate AI (lifetime). Plan Pro: Rp 249.000/tahun (atau Rp 149.000/6 bulan). Plan Sekolah: Rp 1.499.000/tahun untuk maks 30 guru.</p>
 
 <h3>Apakah saya bisa edit modul hasil AI?</h3>
 <p>Ya! Semua modul hasil AI bisa diedit kapan saja. Modul tersimpan di dashboard dan bisa diedit, dipublish, atau di-archive.</p>
@@ -154,7 +158,7 @@ const ARTICLES = [
 <p>Buka Pengaturan → Langganan → Batalkan. Pembatalan berlaku untuk periode berikutnya — Anda tetap akses sampai periode berakhir.</p>
 
 <h3>Apakah ada versi sekolah?</h3>
-<p>Ya, plan Sekolah dirancang untuk sekolah dengan minimum 6 guru. Tersedia dashboard khusus kepala sekolah dan invoice BOS resmi.</p>
+<p>Ya, plan Sekolah dirancang untuk sekolah dengan minimum 3 guru. Tersedia dashboard khusus kepala sekolah dan invoice BOS resmi dengan NPWP dan PPN 11%.</p>
 
 <h3>Apakah bisa digunakan tanpa internet?</h3>
 <p>Fitur dasar bisa offline menggunakan PWA Modulajar. Fitur AI generation memerlukan koneksi internet.</p>

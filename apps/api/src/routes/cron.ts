@@ -1,15 +1,28 @@
 // Cron job routes — /api/cron/*
 // quota_reset (monthly), grace_period_check (daily), subscription_expiry (daily)
 // Ref: modulajar-master-v3.jsx — Day 12
+// Upgraded to Upstash QStash for reliable delivery with retries
 import { Elysia } from "elysia";
 import { createAdminClient } from "@modulajar/db";
 import { PLAN_LIMITS } from "@modulajar/shared";
 import { sendEmail } from "../lib/email";
+import { sendJournalReminder, sendPushToUser } from "../lib/push";
+import { extractQStashHeaders, verifyQStashRequest } from "../lib/qstash";
 
 const CRON_SECRET = process.env["CRON_SECRET"] ?? "";
 
 function verifyCron(request: Request): boolean {
-  return request.headers.get("X-Cron-Secret") === CRON_SECRET;
+  // Check CRON_SECRET header (legacy cron-job.org)
+  const cronSecret = request.headers.get("X-Cron-Secret");
+  if (cronSecret === CRON_SECRET) return true;
+
+  // Check QStash signature
+  const { isQStash, signature, timestamp } = extractQStashHeaders(request);
+  if (isQStash && signature && timestamp) {
+    return verifyQStashRequest("", signature, timestamp);
+  }
+
+  return false;
 }
 
 // ── Quota Reset (monthly, run on 1st of month) ────────────────────
@@ -34,10 +47,13 @@ export const quotaResetCron = new Elysia({ prefix: "cron" })
     }
 
     const updates = subs.map((sub) => {
-      const limits = PLAN_LIMITS[sub.plan as keyof typeof PLAN_LIMITS] as unknown as Record<string, number> | undefined;
+      const plan = sub.plan as keyof typeof PLAN_LIMITS;
+      let aiQuotaLimit = 0;
+      if (plan === "free") aiQuotaLimit = 3;
+      else if (plan === "pro" || plan === "school") aiQuotaLimit = 30;
       return supabase.from("subscriptions").update({
         ai_quota_used: 0,
-        ai_quota_limit: limits?.["full_ai_per_month"] ?? 10,
+        ai_quota_limit: aiQuotaLimit,
         current_period_start: now.toISOString(),
       }).eq("id", sub.id);
     });
@@ -205,4 +221,86 @@ export const expiryCron = new Elysia({ prefix: "cron" })
       notified: expiring?.length ?? 0,
       message: `Expiry notices sent to ${expiring?.length ?? 0} subscribers`,
     };
+  });
+
+// ── Journal Reminder (hourly during school hours) ──────────────────
+// Ref: modulajar-spec-v3.jsx — "30 menit dopo jam kelas → 'Bu Sari, jurnal kelas 8A belum diisi'"
+// Sends push notification only if: journal not filled today, and < 3 notifs sent today
+export const journalReminderCron = new Elysia({ prefix: "cron" })
+  .post("/journal_reminder", async ({ request, set }) => {
+    if (!verifyCron(request)) { set.status = 403; return { error: "forbidden" }; }
+
+    const supabase = createAdminClient();
+    const today = new Date().toISOString().split("T")[0];
+
+    // Get all active teaching classes
+    const { data: classes } = await supabase
+      .from("teaching_classes")
+      .select("id, user_id, class_name, subject, class_time")
+      .eq("is_active", true);
+
+    if (!classes || classes.length === 0) {
+      return { reminders: 0, message: "no active classes" };
+    }
+
+    const classIds = classes.map((c) => c.id);
+
+    // Check which classes already have journals today
+    const { data: journalsToday } = await supabase
+      .from("journals")
+      .select("teaching_class_id")
+      .eq("date", today)
+      .in("teaching_class_id", classIds);
+
+    const filledClassIds = new Set((journalsToday ?? []).map((j) => j.teaching_class_id));
+
+    // Check notification rate limit: max 3/day per user
+    // Get notifications sent to each user today
+    const userIds = [...new Set(classes.map((c) => c.user_id))];
+    const { data: recentNotifs } = await supabase
+      .from("notifications")
+      .select("user_id, created_at")
+      .eq("type", "journal_reminder")
+      .eq("read_at", null)
+      .in("user_id", userIds)
+      .gte("created_at", today);
+
+    const notifCount: Record<string, number> = {};
+    for (const n of recentNotifs ?? []) {
+      notifCount[n.user_id] = (notifCount[n.user_id] ?? 0) + 1;
+    }
+
+    // Send reminders
+    let sent = 0;
+    let skipped = 0;
+
+    for (const cls of classes) {
+      // Skip if journal already filled
+      if (filledClassIds.has(cls.id)) continue;
+
+      // Skip if user already hit 3 notifications today
+      if ((notifCount[cls.user_id] ?? 0) >= 3) {
+        skipped++;
+        continue;
+      }
+
+      // Create in-app notification record
+      await supabase.from("notifications").insert({
+        user_id: cls.user_id,
+        type: "journal_reminder",
+        title: "📓 Jurnal Belum Diisi",
+        body: `Kelas ${cls.class_name} (${cls.subject}) belum ada jurnal hari ini.`,
+        meta: { teaching_class_id: cls.id, class_name: cls.class_name, subject: cls.subject },
+      });
+
+      // Send push notification
+      const { sent: pushSent } = await sendJournalReminder(cls.user_id, cls.class_name, cls.subject);
+      if (pushSent > 0) {
+        notifCount[cls.user_id] = (notifCount[cls.user_id] ?? 0) + 1;
+      }
+
+      sent++;
+    }
+
+    return { reminders: sent, skipped, message: `Sent ${sent} journal reminders` };
   });

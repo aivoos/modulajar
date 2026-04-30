@@ -40,8 +40,8 @@ CREATE TYPE agent_name AS ENUM (
   'activity', 'asesmen', 'validator',
   'prota', 'promes', 'soal', 'deskripsi', 'refleksi'
 );
-CREATE TYPE subscription_plan AS ENUM ('free', 'go', 'plus', 'sekolah');
-CREATE TYPE billing_cycle AS ENUM ('monthly', 'yearly');
+CREATE TYPE subscription_plan AS ENUM ('free', 'pro', 'school');
+CREATE TYPE billing_cycle AS ENUM ('monthly', '6mo', 'yearly');
 CREATE TYPE subscription_status AS ENUM ('active', 'past_due', 'cancelled', 'trialing');
 CREATE TYPE payment_status AS ENUM ('paid', 'pending', 'failed', 'expired');
 CREATE TYPE notification_type AS ENUM (
