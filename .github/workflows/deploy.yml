@@ -32,6 +32,9 @@ jobs:
       url: https://api.modulajar.app
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "22", cache: "pnpm" }
       - name: Install Bun
         run: |
           curl -fsSL https://github.com/oven-sh/bun/releases/download/bun-v1.3.13/bun-linux-x64-baseline.zip -o /tmp/bun.zip
@@ -39,8 +42,6 @@ jobs:
           mv /tmp/bun-linux-x64-baseline/bun /usr/local/bin/bun
           chmod +x /usr/local/bin/bun
           /usr/local/bin/bun --version
-      - uses: actions/setup-node@v4
-        with: { node-version: "22", cache: "pnpm" }
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @modulajar/api build
       - name: Deploy to Railway
@@ -48,7 +49,7 @@ jobs:
           curl -fsSL https://github.com/railwayapp/cli/releases/download/v4.44.0/railway-v4.44.0-x86_64-unknown-linux-musl.tar.gz -o /tmp/railway.tar.gz
           tar -xzf /tmp/railway.tar.gz -C /usr/local/bin
           chmod +x /usr/local/bin/railway
-          railway deploy --token "$RAILWAY_TOKEN" --service @modulajar/api --no-input
+          railway deployment redeploy --service @modulajar/api --yes
       - name: Health check
         run: |
           sleep 15
@@ -79,7 +80,7 @@ jobs:
           curl -fsSL https://github.com/railwayapp/cli/releases/download/v4.44.0/railway-v4.44.0-x86_64-unknown-linux-musl.tar.gz -o /tmp/railway.tar.gz
           tar -xzf /tmp/railway.tar.gz -C /usr/local/bin
           chmod +x /usr/local/bin/railway
-          railway deploy --token "$RAILWAY_TOKEN" --service @modulajar/marketing --no-input
+          railway deployment redeploy --service @modulajar/marketing --yes
       - name: Health check
         run: |
           sleep 15
@@ -104,4 +105,4 @@ jobs:
           curl -fsSL https://github.com/railwayapp/cli/releases/download/v4.44.0/railway-v4.44.0-x86_64-unknown-linux-musl.tar.gz -o /tmp/railway.tar.gz
           tar -xzf /tmp/railway.tar.gz -C /usr/local/bin
           chmod +x /usr/local/bin/railway
-          railway deploy --token "$RAILWAY_TOKEN" --service modulajar/web --no-input
+          railway deployment redeploy --service modulajar/web --yes
