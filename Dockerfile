@@ -16,10 +16,10 @@ COPY apps apps/
 # Install deps
 RUN bun install --frozen-lockfile
 
-# Build per service
+# Build per service (must cd into app dir since turbo runs at root)
 RUN case "$RAILWAY_SERVICE_NAME" in \
-      *marketing*) bun run --filter @modulajar/marketing build ;; \
-      *web*) bun run --filter @modulajar/web build ;; \
+      *marketing*) cd apps/marketing && bun run build ;; \
+      *web*) cd apps/web && bun run build ;; \
       *) bun run --filter @modulajar/api build ;; \
     esac
 
@@ -30,6 +30,6 @@ CMD [ \
   "case \"$RAILWAY_SERVICE_NAME\" in \
     *marketing*) cd apps/marketing && bun run start ;; \
     *web*) cd apps/web && bun run start ;; \
-    *) PORT=8080 bun run --filter @modulajar/api start ;; \
+    *) bun run --filter @modulajar/api start ;; \
   esac" \
 ]
