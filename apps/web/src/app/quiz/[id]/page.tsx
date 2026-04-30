@@ -293,10 +293,7 @@ export default function QuizDetailPage({
                       </label>
                       {attempt.graded_at ? (
                         <button
-                          onClick={() => {
-                            setSelectedStudent(attempt.student_id);
-                            setTab("results");
-                          }}
+                          onClick={() => setTab("results")}
                           className="px-3 py-2 bg-emerald-600/20 text-emerald-400 rounded-lg text-xs font-medium hover:bg-emerald-600/30 transition-colors"
                         >
                           📊 Lihat Feedback
