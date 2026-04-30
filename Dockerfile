@@ -14,9 +14,19 @@ COPY apps apps/
 # Install deps
 RUN bun install --frozen-lockfile
 
-# Build API
-WORKDIR /app/apps/api
-RUN bun run build
+# Build per service
+RUN case "$RAILWAY_SERVICE_NAME" in \
+      *marketing*) bun run --filter @modulajar/marketing build ;; \
+      *web*) bun run --filter @modulajar/web build ;; \
+      *) bun run --filter @modulajar/api build ;; \
+    esac
 
 EXPOSE 3000
-CMD ["bun", "run", "start"]
+CMD [ \
+  "sh", "-c", \
+  "case \"$RAILWAY_SERVICE_NAME\" in \
+    *marketing*) bun run --filter @modulajar/marketing start ;; \
+    *web*) bun run --filter @modulajar/web start ;; \
+    *) bun run --filter @modulajar/api start ;; \
+  esac" \
+]
