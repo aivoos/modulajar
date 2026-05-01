@@ -3,11 +3,12 @@
 export interface SchemaField {
   key: string;
   label: string;
-  type: "text" | "textarea" | "table" | "checkbox" | "select";
+  type: "text" | "textarea" | "table" | "checkbox" | "select" | "number";
   required?: boolean;
   hint?: string;
-  options?: string[];      // for select
-  columns?: string[];       // for table
+  options?: string[];           // for select
+  columns?: { key: string; label: string }[]; // for table
+  placeholder?: string;
 }
 
 export interface SchemaSection {

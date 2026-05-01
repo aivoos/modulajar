@@ -3,8 +3,10 @@
 import { Elysia } from "elysia";
 import { createAdminClient } from "@modulajar/db";
 import { PLAN_LIMITS } from "@modulajar/shared";
+import { chargeModuleGeneration, dnaGetBalance } from "../lib/dna-client";
+import { getOpenAIClient } from "@modulajar/agents";
 import type { ModuleGenerationContext } from "@modulajar/agents";
-import { GenerateBody } from "../lib/schemas";
+import { GenerateBody, AssistBody } from "../lib/schemas";
 
 function getUserId(request: Request): string | null {
   return request.headers.get("X-User-ID") ?? null;
@@ -33,6 +35,14 @@ export const agentRoutes = new Elysia({ prefix: "agent" })
     const used = sub.ai_quota_used ?? 0;
     const available = limit < 0 ? -1 : Math.max(0, limit - used);
 
+    // Get DNA wallet balance for topup credits
+    let dnaBalance = 0n;
+    try {
+      dnaBalance = await dnaGetBalance(supabase, userId);
+    } catch {
+      // DNA not yet initialized — skip
+    }
+
     return {
       plan: sub.plan,
       used,
@@ -41,6 +51,8 @@ export const agentRoutes = new Elysia({ prefix: "agent" })
       exhausted: available === 0,
       can_generate: true,
       can_download_pdf: sub.plan !== "free",
+      dna_balance: Number(dnaBalance),
+      dna_formatted: `${dnaBalance} credits remaining`,
     };
   })
 
@@ -73,21 +85,39 @@ export const agentRoutes = new Elysia({ prefix: "agent" })
     // Free tier can generate (2/month) but cannot download PDF
     // (PDF download check is in the PDF export endpoint, not here)
 
-    // ── Quota check ──────────────────────────────────────────────
-    const limits = PLAN_LIMITS[sub.plan as keyof typeof PLAN_LIMITS];
-    const monthlyLimit = limits ? ("ai_quota_per_month" in limits ? (limits as { ai_quota_per_month: number }).ai_quota_per_month : -1) : 0;
-    const used = sub.ai_quota_used ?? 0;
-    const available = monthlyLimit < 0 ? Infinity : monthlyLimit - used;
+    // ── DNA Wallet check (replaces old ai_quota_used counter) ──────
+    // Pro/Sekolah: deduct from DNA wallet. Free: skip DNA check (uses monthly AI limit).
+    const isFreeTier = sub.plan === "free";
+    if (!isFreeTier) {
+      const chargeResult = await chargeModuleGeneration(supabase, {
+        userId,
+        moduleId: body.module_id ?? "temp",
+        subject: body.subject,
+        phase: body.phase,
+      });
 
-    if (available <= 0) {
-      set.status = 429;
-      return {
-        error: "quota_exceeded",
-        used,
-        limit: monthlyLimit,
-        topup_url: "/settings/billing?topup=true",
-        message: `Kuota Full AI bulan ini sudah habis. Sisa ${available === 0 ? 0 : available}.`,
-      };
+      if (!chargeResult.success) {
+        if (chargeResult.error === "INSUFFICIENT_BALANCE") {
+          set.status = 402;
+          return {
+            error: "insufficient_balance",
+            message: "Topup credits habis. Upgrade plan atau beli topup credits.",
+            topup_url: "/settings/billing?topup=true",
+            balance_formatted: `${chargeResult.balanceAfter ?? 0} credits remaining`,
+            upgrade_url: "/settings/billing",
+          };
+        }
+        if (chargeResult.error === "POLICY_LIMIT_EXCEEDED") {
+          set.status = 429;
+          return {
+            error: "policy_limit_exceeded",
+            message: "Batas harian tercapai. Coba lagi besok.",
+            topup_url: "/settings/billing?topup=true",
+          };
+        }
+        set.status = 500;
+        return { error: chargeResult.error ?? "dna_charge_failed" };
+      }
     }
 
     // ── Create or use existing module ─────────────────────────────
@@ -208,8 +238,101 @@ export const agentRoutes = new Elysia({ prefix: "agent" })
     return { job, steps: steps ?? [] };
   })
 
-// POST /api/agent/generate-questions — Bank Soal AI
-.post("/generate-questions", async ({ request, set }) => {
+  // POST /api/agent/assist — Scratch editor inline AI assist
+  .post("/assist", async ({ request, set }) => {
+    const userId = getUserId(request);
+    if (!userId) { set.status = 401; return { error: "unauthorized" }; }
+
+    const supabase = createAdminClient();
+    const raw = await request.json().catch(() => ({}));
+    const parsed = AssistBody.safeParse(raw);
+    if (!parsed.success) { set.status = 400; return { error: "validation_error" }; }
+    const { module_id, section, mode, current_content } = parsed.data;
+
+    // Load module + template
+    const { data: mod } = await supabase
+      .from("modules")
+      .select("id, user_id, subject, phase, grade, title")
+      .eq("id", module_id)
+      .single();
+    if (!mod) { set.status = 404; return { error: "module_not_found" }; }
+    if (mod.user_id !== userId) { set.status = 403; return { error: "forbidden" }; }
+
+    // Check subscription
+    const { data: sub } = await supabase
+      .from("subscriptions")
+      .select("plan, ai_quota_used, ai_quota_limit")
+      .eq("user_id", userId)
+      .single();
+    if (sub?.plan === "free" && (sub.ai_quota_used ?? 0) >= 2) {
+      set.status = 403;
+      return { error: "quota_exhausted", message: "Kuota AI gratis sudah habis. Upgrade ke Go." };
+    }
+
+    const openai = getOpenAIClient();
+    const modeLabels: Record<string, string> = {
+      suggest: "Suggestion",
+      improve: "Improvement",
+      generate: "Generate",
+      check: "Check",
+    };
+    const sectionName = section.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+
+    const systemPrompt = `Kamu adalah asisten AI untuk guru Indonesia yang membuat Modul Ajar. Gunakan bahasa Indonesia yang sopan dan profesional.`;
+
+    const userPrompt = mode === "suggest"
+      ? `Beri saran untuk section "${sectionName}" pada Modul Ajar "${mod.title}" untuk mata pelajaran ${mod.subject}, Fase ${mod.phase}${mod.grade ? `, Kelas ${mod.grade}` : ""}.\n\nFormat respons sebagai JSON dengan key "suggestion" (string). Buat saran konkret dan praktis yang sesuai dengan Kurikulum Merdeka.`
+      : mode === "improve"
+      ? `Tingkatkan kualitas konten berikut untuk section "${sectionName}" pada Modul Ajar "${mod.title}" untuk mata pelajaran ${mod.subject}, Fase ${mod.phase}${mod.grade ? `, Kelas ${mod.grade}` : ""}.\n\nKonten saat ini:\n${current_content ?? "(kosong)"}\n\nFormat respons sebagai JSON dengan key "improved" (string). Jaga essensi konten, perbaiki struktur, keakuratan, dan kejelasan.`
+      : mode === "generate"
+      ? `Buat konten untuk section "${sectionName}" pada Modul Ajar "${mod.title}" untuk mata pelajaran ${mod.subject}, Fase ${mod.phase}${mod.grade ? `, Kelas ${mod.grade}` : ""}.\n\nFormat respons sebagai JSON dengan key "generated" (string). Buat konten lengkap sesuai Kurikulum Merdeka.`
+      : `Periksa dan validasi konten berikut untuk section "${sectionName}" pada Modul Ajar "${mod.title}" untuk mata pelajaran ${mod.subject}, Fase ${mod.phase}${mod.grade ? `, Kelas ${mod.grade}` : ""}.\n\nKonten:\n${current_content ?? "(kosong)"}\n\nFormat respons sebagai JSON dengan key "feedback" (string) berisi daftar pemeriksaan: kekuatan, kelemahan, dan saran perbaikan.`;
+
+    let result = "";
+    try {
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt },
+        ],
+        max_tokens: 1024,
+        temperature: 0.7,
+      });
+      result = response.choices[0]?.message?.content ?? "";
+    } catch (err) {
+      console.error("[agent/assist] OpenAI error:", err);
+      set.status = 502;
+      return { error: "ai_provider_error" };
+    }
+
+    // Parse JSON from response
+    let parsedResult: Record<string, string> = {};
+    try {
+      const match = result.match(/\{[\s\S]*\}/);
+      if (match) parsedResult = JSON.parse(match[0]);
+    } catch {
+      parsedResult = { raw: result };
+    }
+
+    // Update quota
+    if (sub) {
+      await supabase
+        .from("subscriptions")
+        .update({ ai_quota_used: (sub.ai_quota_used ?? 0) + 1 })
+        .eq("user_id", userId);
+    }
+
+    return {
+      section,
+      mode,
+      result: parsedResult.suggestion ?? parsedResult.improved ?? parsedResult.generated ?? parsedResult.feedback ?? result,
+      raw: result,
+    };
+  })
+
+  // POST /api/agent/generate-questions — Bank Soal AI
+  .post("/generate-questions", async ({ request, set }) => {
   const userId = getUserId(request);
   if (!userId) { set.status = 401; return { error: "unauthorized" }; }
 
@@ -392,8 +515,9 @@ async function dispatchGeneration(
         })
         .eq("id", moduleId);
 
-      // Update quota (skip free tier)
-      if (plan !== "free") {
+      // ai_quota_used counter is kept for FREE tier only (no DNA wallet).
+      // Pro/Sekolah: DNA wallet already deducted at generation start.
+      if (plan === "free") {
         const { data: sub } = await supabase
           .from("subscriptions")
           .select("ai_quota_used")

@@ -2,6 +2,7 @@
 import { Elysia } from "elysia";
 import { createAdminClient } from "@modulajar/db";
 import { PLAN_LIMITS } from "@modulajar/shared";
+import { creditTopup } from "../lib/dna-client";
 
 // Log webhook call first
 async function logWebhook(supabase: ReturnType<typeof createAdminClient>, provider: string, event: string, payload: unknown) {
@@ -112,11 +113,19 @@ async function handleXenditWebhook(payload: Record<string, unknown>) {
           paid_at: new Date().toISOString(),
         }).eq("id", topup.id);
 
-        // Add credits to subscription
-        const { data: sub } = await supabase.from("subscriptions").select("ai_quota_limit").eq("user_id", topup.user_id).single();
-        await supabase.from("subscriptions").update({
-          ai_quota_limit: (sub?.ai_quota_limit ?? 0) + topup.modul_count,
-        }).eq("user_id", topup.user_id);
+        // Credit DNA wallet (replaces old ai_quota_limit increment)
+        const dnaResult = await creditTopup(supabase, {
+          userId: topup.user_id,
+          topupId: topup.id,
+          amountIdr: topup.amount_idr,
+          aiCredits: topup.ai_credits ?? 3,
+        });
+
+        if (!dnaResult.success) {
+          console.error("[webhook] DNA credit failed for topup", topup.id, dnaResult.error);
+        } else {
+          console.log(`[webhook] DNA wallet credited: user=${topup.user_id} credits=${topup.ai_credits} balance=${dnaResult.balance}`);
+        }
 
         // Update payment record
         await supabase.from("payments").update({

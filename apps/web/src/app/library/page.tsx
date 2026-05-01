@@ -94,7 +94,7 @@ export default function LibraryPage() {
                 <div className="flex flex-wrap gap-1.5 mb-3">
                   <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{mod.subject}</span>
                   <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">Fase {mod.phase}</span>
-                  <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">Kelas {mod.grade}</span>
+                  {mod.grade && <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">Kelas {mod.grade}</span>}
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-gray-400">🌿 {mod.fork_count} fork</span>

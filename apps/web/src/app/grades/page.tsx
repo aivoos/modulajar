@@ -1,10 +1,8 @@
 "use client";
 export const dynamic = 'force-dynamic';
-
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
 
 interface TeachingClass {
   id: string;
@@ -13,22 +11,21 @@ interface TeachingClass {
   class_name: string;
   phase: string | null;
   student_count: number;
-  academic_years?: { label: string };
+  academic_years?: { label: string } | { label: string }[];
 }
 
-export default function GradesPage() {
-  const router = useRouter();
+export default function GradesListPage() {
   const [classes, setClasses] = useState<TeachingClass[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return router.push("/login");
+      if (!user) { setLoading(false); return; }
 
       const { data: tc } = await supabase
         .from("teaching_classes")
-        .select("id, subject, grade, class_name, phase, student_count, academic_years(label)")
+        .select("id, subject, grade, class_name, phase, student_count, academic_years(id, label)")
         .eq("user_id", user.id)
         .eq("is_active", true)
         .order("class_name");
@@ -37,7 +34,7 @@ export default function GradesPage() {
       setLoading(false);
     }
     load();
-  }, [router]);
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#0D1117]">
@@ -45,22 +42,15 @@ export default function GradesPage() {
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Link href="/dashboard" className="text-[#475569] hover:text-[#64748B]">←</Link>
-            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">M</div>
-            <span className="font-bold text-[#F1F5F9]">Modulajar</span>
+            <span className="font-bold text-[#F1F5F9]">📊 Input Nilai</span>
           </div>
-          <nav className="flex items-center gap-4 text-sm">
-            <Link href="/dashboard" className="text-[#64748B] hover:text-[#E2E8F0]">Dashboard</Link>
-            <Link href="/modules" className="text-[#64748B] hover:text-[#E2E8F0]">Modul</Link>
-          </nav>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-6 py-8 space-y-6">
+      <main className="max-w-4xl mx-auto px-6 py-6 space-y-5">
         <div>
-          <h1 className="text-2xl font-bold text-[#F1F5F9]">📊 Nilai Siswa</h1>
-          <p className="text-[#64748B] text-sm mt-1">
-            Input dan kelola nilai siswa per kelas — formatif & sumatif
-          </p>
+          <h1 className="text-lg font-bold text-[#E2E8F0]">Pilih Kelas</h1>
+          <p className="text-xs text-[#475569] mt-1">Input nilai formatif & sumatif per TP untuk setiap kelas.</p>
         </div>
 
         {loading ? (
@@ -70,39 +60,45 @@ export default function GradesPage() {
             ))}
           </div>
         ) : classes.length === 0 ? (
-          <div className="bg-[#161B27] rounded-xl border border-[#21293A] p-10 text-center">
+          <div className="text-center py-16 bg-[#161B27] rounded-xl border border-[#21293A]">
             <p className="text-4xl mb-3">📊</p>
             <p className="text-[#64748B] font-medium">Belum ada kelas</p>
             <p className="text-[#475569] text-sm mt-1 mb-4">Tambahkan kelas terlebih dahulu.</p>
-            <Link href="/classes/new" className="text-[#818CF8] text-sm font-medium hover:underline">
+            <Link href="/classes/new" className="text-indigo-400 text-sm font-medium hover:underline">
               + Tambah kelas
             </Link>
           </div>
         ) : (
-          <div className="bg-[#161B27] rounded-xl border border-[#21293A] overflow-hidden">
-            <div className="divide-y divide-[#1A2030]">
-              {classes.map((cls) => (
+          <div className="space-y-3">
+            {classes.map((cls) => {
+              const ayLabel = Array.isArray(cls.academic_years)
+                ? cls.academic_years[0]?.label
+                : cls.academic_years?.label;
+              return (
                 <Link
                   key={cls.id}
                   href={`/grades/${cls.id}`}
-                  className="flex items-center gap-4 px-5 py-4 hover:bg-[#1A2030]/50 transition-colors"
+                  className="block bg-[#161B27] rounded-xl border border-[#21293A] p-4 hover:border-indigo-500/40 transition-all"
                 >
-                  <div className="w-12 h-12 bg-[#4F46E5]/20 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <span className="text-[#818CF8] font-bold text-sm">{cls.class_name}</span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-[#E2E8F0]">{cls.subject} — {cls.grade}</p>
-                    <p className="text-xs text-[#475569] mt-0.5">
-                      {cls.student_count} siswa
-                      {cls.academic_years?.label && ` · ${cls.academic_years.label}`}
-                    </p>
-                  </div>
-                  <div className="flex-shrink-0">
-                    <span className="text-[#818CF8] text-sm">Input Nilai →</span>
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-[#4F46E5]/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <span className="text-[#818CF8] font-bold text-sm">{cls.class_name}</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-[#E2E8F0]">{cls.subject} — {cls.grade}</h3>
+                      <p className="text-xs text-[#475569] mt-0.5">
+                        {cls.student_count} siswa
+                        {ayLabel && ` · ${ayLabel}`}
+                        {cls.phase && ` · Fase ${cls.phase}`}
+                      </p>
+                    </div>
+                    <div className="flex-shrink-0">
+                      <span className="text-[#818CF8] text-sm font-medium">Input Nilai →</span>
+                    </div>
                   </div>
                 </Link>
-              ))}
-            </div>
+              );
+            })}
           </div>
         )}
 

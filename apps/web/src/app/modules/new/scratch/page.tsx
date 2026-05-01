@@ -19,8 +19,8 @@ export default function ScratchPage() {
   const [loading, setLoading] = useState(false);
   const [curriculumId, setCurriculumId] = useState("");
   const [mapel, setMapel] = useState("");
-  const [fase, setFase] = useState("C");
-  const [kelas, setKelas] = useState<number[]>([10]);
+  const [phase, setPhase] = useState("C");
+  const [selectedGrades, setSelectedGrades] = useState<number[]>([10]);
 
   // Load active curriculum version
   useEffect(() => {
@@ -36,7 +36,7 @@ export default function ScratchPage() {
   }, []);
 
   function toggleKelas(k: number) {
-    setKelas((prev) =>
+    setSelectedGrades((prev) =>
       prev.includes(k) ? prev.filter((x) => x !== k) : [...prev, k]
     );
   }
@@ -61,11 +61,11 @@ export default function ScratchPage() {
       .insert({
         user_id: user.id,
         curriculum_version_id: curriculumId,
-        module_template_id: templates?.[0]?.id ?? null,
+        template_id: templates?.[0]?.id ?? null,
         title: "Modul Baru — belum berjudul",
         subject: mapel,
-        fase,
-        kelas,
+        phase,
+        grade: selectedGrades[0]?.toString() ?? null,
         status: "draft",
         content: {},
       })
@@ -121,9 +121,9 @@ export default function ScratchPage() {
               <button
                 key={f}
                 type="button"
-                onClick={() => { setFase(f); setKelas(KELAS_MAP[f] ?? [10]); }}
+                onClick={() => { setPhase(f); setSelectedGrades(KELAS_MAP[f] ?? [10]); }}
                 className={`w-12 h-12 rounded-xl border text-sm font-bold transition-all ${
-                  fase === f ? "border-indigo-600 bg-indigo-50 text-indigo-700" : "border-gray-200 text-gray-600"
+                  phase === f ? "border-indigo-600 bg-indigo-50 text-indigo-700" : "border-gray-200 text-gray-600"
                 }`}
               >
                 {f}
@@ -136,13 +136,13 @@ export default function ScratchPage() {
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Kelas</label>
           <div className="flex flex-wrap gap-2">
-            {(KELAS_MAP[fase] ?? [10]).map((k) => (
+            {(KELAS_MAP[phase] ?? [10]).map((k) => (
               <button
                 key={k}
                 type="button"
                 onClick={() => toggleKelas(k)}
                 className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
-                  kelas.includes(k) ? "border-indigo-600 bg-indigo-50 text-indigo-700" : "border-gray-200 text-gray-600"
+                  selectedGrades.includes(k) ? "border-indigo-600 bg-indigo-50 text-indigo-700" : "border-gray-200 text-gray-600"
                 }`}
               >
                 Kelas {k}

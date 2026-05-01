@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
+import Link from "next/link";
 import { supabase } from "@/lib/supabase/client";
 import { SchemaRenderer } from "@/lib/schema-renderer/fields";
 import type { ModuleTemplateSchema, ModuleContent } from "@/lib/schema-renderer/types";
@@ -42,7 +43,7 @@ export default function ModuleEditorPage() {
   const router = useRouter();
   const params = useParams<{ id: string }>();
   const [module, setModule] = useState<{
-    id: string; title: string; subject: string; fase: string; status: string; content: ModuleContent;
+    id: string; title: string; subject: string; phase: string | null; status: string; content: ModuleContent;
   } | null>(null);
   const [schema, setSchema] = useState<ModuleTemplateSchema | null>(null);
   const [sections, setSections] = useState<Section[]>([]);
@@ -59,7 +60,7 @@ export default function ModuleEditorPage() {
     async function load() {
       const { data: mod, error } = await supabase
         .from("modules")
-        .select("id, title, subject, fase, status, content, module_template_id, curriculum_version_id")
+        .select("id, title, subject, phase, status, content, template_id, curriculum_version_id")
         .eq("id", params.id)
         .single();
 
@@ -73,7 +74,7 @@ export default function ModuleEditorPage() {
       const { data: tmpl } = await supabase
         .from("module_templates")
         .select("schema")
-        .eq("id", mod.module_template_id)
+        .eq("id", mod.template_id)
         .single();
 
       if (tmpl) {
@@ -203,6 +204,12 @@ export default function ModuleEditorPage() {
           {module.status === "published" && (
             <span className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full">Published</span>
           )}
+          <Link
+            href={`/modules/${params.id}`}
+            className="px-3 py-1.5 text-xs font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50"
+          >
+            Preview
+          </Link>
         </div>
 
         {/* Sections */}
@@ -214,6 +221,7 @@ export default function ModuleEditorPage() {
                 content={content}
                 onChange={handleChange}
                 readOnly={module.status === "published"}
+                moduleId={module.id}
               />
             </div>
           ))}

@@ -38,6 +38,8 @@ export default function ClassDetailPage({
   const [activeTab, setActiveTab] = useState<Tab>("siswa");
   const [addingStudent, setAddingStudent] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [importResult, setImportResult] = useState<{ imported: number; skipped?: number } | null>(null);
   const [newStudent, setNewStudent] = useState({ name: "", nis: "", gender: "" as "L" | "P" | "" });
 
   useEffect(() => {
@@ -55,28 +57,41 @@ export default function ClassDetailPage({
     e.preventDefault();
     if (!newStudent.name.trim()) return;
     setSaving(true);
-
     const res = await fetch(`/api/teaching-classes/${id}/students`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(newStudent),
     });
-
     if (res.ok) {
       const { data } = await res.json();
       setTc((prev) =>
-        prev
-          ? {
-              ...prev,
-              students: [...prev.students, data],
-              student_count: prev.student_count + 1,
-            }
-          : prev
+        prev ? { ...prev, students: [...prev.students, data], student_count: prev.student_count + 1 } : prev
       );
       setNewStudent({ name: "", nis: "", gender: "" });
       setAddingStudent(false);
     }
     setSaving(false);
+  }
+
+  async function handleImportExcel(file: File) {
+    setImporting(true);
+    setImportResult(null);
+    const fd = new FormData();
+    fd.append("file", file);
+    const res = await fetch(`/api/teaching-classes/${id}/import`, { method: "POST", body: fd });
+    const data = await res.json();
+    if (res.ok) {
+      setImportResult({ imported: data.imported, skipped: data.skipped });
+      // Reload class detail to refresh student list
+      const refreshed = await fetch(`/api/teaching-classes/${id}`);
+      if (refreshed.ok) {
+        const { data: updated } = await refreshed.json();
+        setTc(updated);
+      }
+    } else {
+      alert(data.error ?? "Import gagal");
+    }
+    setImporting(false);
   }
 
   if (loading) {
@@ -164,12 +179,35 @@ export default function ClassDetailPage({
           <div className="bg-[#161B27] rounded-xl border border-[#21293A] overflow-hidden">
             <div className="px-5 py-4 border-b border-[#1A2030] flex items-center justify-between">
               <h2 className="font-semibold text-[#E2E8F0]">Daftar Siswa</h2>
-              <button
-                onClick={() => setAddingStudent(true)}
-                className="text-sm text-[#818CF8] font-medium hover:underline"
-              >
-                + Tambah Siswa
-              </button>
+              <div className="flex items-center gap-3">
+                {importResult && (
+                  <span className="text-sm text-green-400">
+                    ✅ {importResult.imported} siswa di-import{importResult.skipped ? ` (${importResult.skipped} skip)` : ""}
+                  </span>
+                )}
+                <a
+                  href={`/api/teaching-classes/${id}/import/template`}
+                  className="text-sm text-[#64748B] hover:text-[#818CF8]"
+                  target="_blank"
+                >
+                  📥 Template
+                </a>
+                <label className="cursor-pointer text-sm text-[#818CF8] font-medium hover:underline">
+                  {importing ? "..." : "+ Import Excel"}
+                  <input
+                    type="file"
+                    accept=".xlsx,.xls,.csv"
+                    className="hidden"
+                    onChange={(e) => { const f = e.target.files?.[0]; if (f) handleImportExcel(f); e.target.value = ""; }}
+                  />
+                </label>
+                <button
+                  onClick={() => setAddingStudent(true)}
+                  className="text-sm text-[#818CF8] font-medium hover:underline"
+                >
+                  + Tambah Manual
+                </button>
+              </div>
             </div>
 
             {addingStudent && (

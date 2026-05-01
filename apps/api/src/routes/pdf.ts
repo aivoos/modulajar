@@ -9,16 +9,14 @@ import puppeteer from "puppeteer-core";
 
 function moduleToHtml(
   mod: {
-    title: string; subject: string; fase: string; kelas: string | string[];
+    title: string; subject: string; phase: string | null; grade: string | null;
     duration_minutes: number | null; content: Record<string, unknown>; user_id: string;
   },
   authorName: string,
   isFree: boolean
 ): string {
   const c = mod.content ?? {};
-  const kelasStr = Array.isArray(mod.kelas)
-    ? mod.kelas.join(", ")
-    : (mod.kelas ?? "");
+  const kelasStr = mod.grade ?? "";
 
   const wrapText = (v: unknown): string => {
     if (!v) return "—";
@@ -224,7 +222,7 @@ function moduleToHtml(
   <div class="header-row">
     <div class="logo-text">📘 Modulajar</div>
     <div class="header-meta">
-      ${mod.subject} · Fase ${mod.fase} · Kelas ${kelasStr}<br/>
+      ${mod.subject} · Fase ${mod.phase ?? "—"} · Kelas ${kelasStr}<br/>
       ${mod.duration_minutes ? `Alokasi: ${mod.duration_minutes} menit` : ""}
     </div>
   </div>
@@ -237,8 +235,8 @@ function moduleToHtml(
   </div>
   <div class="identity-grid">
     <div class="identity-item"><span class="identity-label">Mata Pelajaran</span><span class="identity-value">${mod.subject}</span></div>
-    <div class="identity-item"><span class="identity-label">Fase</span><span class="identity-value">${mod.fase}</span></div>
-    <div class="identity-item"><span class="identity-label">Kelas</span><span class="identity-value">${kelasStr}</span></div>
+    <div class="identity-item"><span class="identity-label">Fase</span><span class="identity-value">${mod.phase ?? "—"}</span></div>
+    <div class="identity-item"><span class="identity-label">Kelas</span><span class="identity-value">${kelasStr || "—"}</span></div>
     <div class="identity-item"><span class="identity-label">Alokasi Waktu</span><span class="identity-value">${mod.duration_minutes ?? 80} menit</span></div>
     <div class="identity-item"><span class="identity-label">Gaya Belajar</span><span class="identity-value">${wrapText(c["gaya_belajar"] ?? c["learning_style"] ?? "Campuran")}</span></div>
     <div class="identity-item"><span class="identity-label">Penyusun</span><span class="identity-value">${authorName}</span></div>
@@ -295,7 +293,7 @@ ${c["kegiatan"] ? `
       ${c["kegiatan"].map((row: unknown) => {
         const r = row as Record<string, unknown>;
         return `<tr>
-          <td style="font-weight:600;color:#4f46e5;background:#eef2ff">${r["phase"] ?? r["fase"] ?? ""}</td>
+          <td style="font-weight:600;color:#4f46e5;background:#eef2ff">${r["phase"] ?? r["key"] ?? ""}</td>
           <td>${r["activity"] ?? r["kegiatan"] ?? ""}</td>
           <td style="text-align:center">${r["duration"] ?? r["durasi"] ?? ""}</td>
           <td>${r["method"] ?? r["metode"] ?? ""}</td>
@@ -343,7 +341,7 @@ export const pdfRoutes = new Elysia({ prefix: "modules" })
     // Fetch module + check ownership
     const { data: mod, error: modErr } = await supabase
       .from("modules")
-      .select("id, title, subject, fase, kelas, duration_minutes, content, user_id, mode, status, is_curated")
+      .select("id, title, subject, phase, grade, duration_minutes, content, user_id, mode, status, is_curated")
       .eq("id", params["id"])
       .single();
 

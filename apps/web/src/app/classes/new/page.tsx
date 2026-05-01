@@ -1,19 +1,20 @@
 "use client";
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-const MAPEL = [
-  "Bahasa Indonesia", "Matematika", "IPA", "IPS",
-  "Bahasa Inggris", "PJOK", "Seni Budaya", "Prakarya",
-  "Pendidikan Agama", "PKn", "Bahasa Daerah",
-];
-const GRADES = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"];
 const FASES = ["A", "B", "C", "D", "E", "F"];
+
+interface Options {
+  academic_years: Array<{ id: string; label: string; year: number; semester: string }>;
+  subjects: string[];
+  grades: string[];
+  school_id: string | null;
+}
 
 export default function NewClassPage() {
   const router = useRouter();
+  const [opts, setOpts] = useState<Options | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({
@@ -22,12 +23,25 @@ export default function NewClassPage() {
     class_name: "",
     phase: "",
     notes: "",
+    academic_year_id: "",
   });
+
+  useEffect(() => {
+    fetch("/api/teaching-classes/options")
+      .then((r) => r.json())
+      .then((data: Options) => {
+        setOpts(data);
+        if (data.academic_years.length > 0) {
+          const active = data.academic_years.find((y) => y.label.includes("2025")) ?? data.academic_years[0];
+          setForm((f) => ({ ...f, academic_year_id: active.id }));
+        }
+      });
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!form.subject || !form.grade || !form.class_name) {
-      setError("Mata pelajaran, tingkat, dan nama kelas wajib diisi.");
+    if (!form.subject || !form.grade || !form.class_name || !form.academic_year_id) {
+      setError("Mata pelajaran, tahun ajaran, tingkat, dan nama kelas wajib diisi.");
       return;
     }
 
@@ -64,11 +78,31 @@ export default function NewClassPage() {
         <h1 className="text-2xl font-bold text-gray-900 mb-6">Tambah Kelas Baru</h1>
 
         <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-gray-200 p-6 space-y-6">
+          {/* Academic Year */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Tahun Ajaran</label>
+            <select
+              value={form.academic_year_id}
+              onChange={(e) => setForm((f) => ({ ...f, academic_year_id: e.target.value }))}
+              required
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            >
+              <option value="">Pilih tahun ajaran...</option>
+              {opts?.academic_years.map((y) => (
+                <option key={y.id} value={y.id}>{y.label} ({y.semester})</option>
+              ))}
+            </select>
+          </div>
+
           {/* Subject */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Mata Pelajaran</label>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              {MAPEL.map((m) => (
+              {(opts?.subjects ?? [
+                "Bahasa Indonesia", "Matematika", "IPA", "IPS",
+                "Bahasa Inggris", "PJOK", "Seni Budaya", "Prakarya",
+                "Pendidikan Agama", "PKn", "Bahasa Daerah",
+              ]).map((m) => (
                 <button
                   key={m}
                   type="button"
@@ -96,7 +130,9 @@ export default function NewClassPage() {
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
                 <option value="">Pilih tingkat...</option>
-                {GRADES.map((g) => <option key={g} value={g}>{g}</option>)}
+                {(opts?.grades ?? ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"]).map((g) => (
+                  <option key={g} value={g}>{g}</option>
+                ))}
               </select>
             </div>
             <div>
@@ -150,9 +186,7 @@ export default function NewClassPage() {
           )}
 
           <div className="flex items-center gap-3">
-            <Link href="/classes" className="px-5 py-2.5 border border-gray-300 rounded-xl text-gray-600 hover:bg-gray-50">
-              Batal
-            </Link>
+            <Link href="/classes" className="px-5 py-2.5 border border-gray-300 rounded-xl text-gray-600 hover:bg-gray-50">Batal</Link>
             <button
               type="submit"
               disabled={loading}

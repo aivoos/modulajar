@@ -4,6 +4,12 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase/client";
 
+const MODE_LABELS: Record<string, { label: string; color: string }> = {
+  full_ai: { label: "AI Generate", color: "bg-indigo-100 text-indigo-700" },
+  curated: { label: "Kurasi", color: "bg-purple-100 text-purple-700" },
+  scratch: { label: "Scratch", color: "bg-gray-100 text-gray-600" },
+};
+
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   draft: { label: "Draft", color: "bg-gray-100 text-gray-600" },
   published: { label: "Dipublikasi", color: "bg-green-100 text-green-700" },
@@ -11,15 +17,17 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
 };
 
 const STATUS_FILTERS = ["all", "draft", "published", "archived"];
+const MODE_FILTERS = ["all", "full_ai", "curated", "scratch"];
 
 export default function ModulesPage() {
   const [modules, setModules] = useState<Array<{
-    id: string; title: string; subject: string; fase: string;
-    status: string; is_curated: boolean; fork_count: number;
+    id: string; title: string; subject: string; phase: string | null;
+    status: string; mode: string; is_curated: boolean; fork_count: number;
     updated_at: string; tags: string[];
   }>>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [modeFilter, setModeFilter] = useState("all");
   const [search, setSearch] = useState("");
 
   useEffect(() => {
@@ -29,18 +37,19 @@ export default function ModulesPage() {
 
       let q = supabase
         .from("modules")
-        .select("id, title, subject, fase, status, is_curated, fork_count, updated_at, tags")
+        .select("id, title, subject, phase, status, mode, is_curated, fork_count, updated_at, tags")
         .eq("user_id", user.id)
         .order("updated_at", { ascending: false });
 
-      if (filter !== "all") q = q.eq("status", filter);
+      if (statusFilter !== "all") q = q.eq("status", statusFilter);
+      if (modeFilter !== "all") q = q.eq("mode", modeFilter);
 
       const { data } = await q;
       setModules(data ?? []);
       setLoading(false);
     }
     load();
-  }, [filter]);
+  }, [statusFilter, modeFilter]);
 
   const filtered = search
     ? modules.filter((m) =>
@@ -64,7 +73,7 @@ export default function ModulesPage() {
         </Link>
       </div>
 
-      {/* Search + Filter */}
+      {/* Status + Mode Filter */}
       <div className="flex gap-3 mb-5">
         <input
           type="search"
@@ -77,12 +86,25 @@ export default function ModulesPage() {
           {STATUS_FILTERS.map((s) => (
             <button
               key={s}
-              onClick={() => setFilter(s)}
+              onClick={() => setStatusFilter(s)}
               className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
-                filter === s ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"
+                statusFilter === s ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"
               }`}
             >
               {s === "all" ? "Semua" : s.charAt(0).toUpperCase() + s.slice(1)}
+            </button>
+          ))}
+        </div>
+        <div className="flex gap-1 bg-purple-50 p-1 rounded-lg">
+          {MODE_FILTERS.map((m) => (
+            <button
+              key={m}
+              onClick={() => setModeFilter(m)}
+              className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
+                modeFilter === m ? "bg-white text-purple-700 shadow-sm" : "text-purple-400 hover:text-purple-600"
+              }`}
+            >
+              {m === "all" ? "Semua Mode" : MODE_LABELS[m]?.label ?? m}
             </button>
           ))}
         </div>
@@ -122,10 +144,15 @@ export default function ModulesPage() {
                       {mod.is_curated && (
                         <span className="text-xs px-2 py-0.5 rounded-full bg-purple-100 text-purple-700">Dikurasi</span>
                       )}
+                      {mod.mode && MODE_LABELS[mod.mode] && (
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${MODE_LABELS[mod.mode].color}`}>
+                          {MODE_LABELS[mod.mode].label}
+                        </span>
+                      )}
                     </div>
                     <div className="flex items-center gap-3 mt-1.5 text-xs text-gray-400">
                       <span>{mod.subject}</span>
-                      <span>Fase {mod.fase}</span>
+                      {mod.phase && <span>Fase {mod.phase}</span>}
                       {mod.fork_count > 0 && <span>🌿 {mod.fork_count} fork</span>}
                       <span>{new Date(mod.updated_at).toLocaleDateString("id-ID")}</span>
                     </div>

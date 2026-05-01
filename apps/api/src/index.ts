@@ -60,6 +60,9 @@ const { teachingClassRoutes } = await import("./routes/teaching-classes");
 const { quotaResetCron, gracePeriodCron, quotaWarningCron, expiryCron, journalReminderCron } = await import("./routes/cron");
 const { bankSoalRoutes } = await import("./routes/bank-soal");
 const { quizRoutes } = await import("./routes/quiz");
+const { topupRoutes } = await import("./routes/topup");
+const { dnaRoutes } = await import("./routes/dna");
+const { importRoutes } = await import("./routes/import-students");
 
 app
   .use(authRoutes)
@@ -83,7 +86,10 @@ app
   .use(expiryCron)
   .use(journalReminderCron)
   .use(bankSoalRoutes)
-  .use(quizRoutes);
+  .use(quizRoutes)
+  .use(topupRoutes)
+  .use(dnaRoutes)
+  .use(importRoutes);
 
 const PORT = parseInt(process.env["PORT"] ?? "3000", 10);
 const HOST = process.env["HOST"] ?? "0.0.0.0";

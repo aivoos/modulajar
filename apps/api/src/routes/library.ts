@@ -10,7 +10,7 @@ export const libraryRoutes = new Elysia({ prefix: "library" })
     const supabase = createAdminClient();
     const { data, error } = await supabase
       .from("modules")
-      .select("id, title, subject, fase, kelas, is_curated, fork_count, tags, created_at, user_id")
+      .select("id, title, subject, phase, grade, is_curated, fork_count, tags, created_at, user_id")
       .eq("is_curated", true)
       .eq("status", "published")
       .order("fork_count", { ascending: false })

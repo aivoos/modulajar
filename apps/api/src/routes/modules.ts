@@ -16,6 +16,7 @@ export const moduleRoutes = new Elysia({ prefix: "modules" })
     const url = new URL(request.url);
     const status = url.searchParams.get("status");
     const subject = url.searchParams.get("subject");
+    const mode = url.searchParams.get("mode");
     const limit = parseInt(url.searchParams.get("limit") ?? "20", 10);
 
     let q = supabase
@@ -27,6 +28,7 @@ export const moduleRoutes = new Elysia({ prefix: "modules" })
 
     if (status && status !== "all") q = q.eq("status", status);
     if (subject) q = q.eq("subject", subject);
+    if (mode && mode !== "all") q = q.eq("mode", mode);
 
     const { data, error } = await q;
     if (error) { set.status = 500; return { error: "list_failed" }; }
