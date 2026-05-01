@@ -33,11 +33,9 @@ ENV PORT=8080
 
 WORKDIR /app
 
-# Copy pre-built .next + public from each build stage
+# Copy pre-built .next from each build stage
 COPY --from=marketing-build /app/apps/marketing/.next ./apps/marketing/.next
-COPY --from=marketing-build /app/apps/marketing/public ./apps/marketing/public
 COPY --from=web-build /app/apps/web/.next ./apps/web/.next
-COPY --from=web-build /app/apps/web/public ./apps/web/public
 
 # Copy monorepo source (includes package.json for scripts resolution)
 COPY --from=monorepo-base /app/node_modules ./node_modules
