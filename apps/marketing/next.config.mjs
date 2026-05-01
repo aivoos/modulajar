@@ -1,8 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    outputFileTracingRoot: "/app",
-  },
+  outputFileTracingRoot: "/app",
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "*.supabase.co" },
