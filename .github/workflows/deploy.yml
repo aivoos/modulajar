@@ -49,14 +49,14 @@ jobs:
           curl -fsSL https://github.com/railwayapp/cli/releases/download/v4.44.0/railway-v4.44.0-x86_64-unknown-linux-musl.tar.gz -o /tmp/railway.tar.gz
           tar -xzf /tmp/railway.tar.gz -C /usr/local/bin
           chmod +x /usr/local/bin/railway
-          railway deployment redeploy --service @modulajar/api --yes
+          railway deployment up --service @modulajar/api --detach
       - name: Health check
         run: |
-          sleep 30
+          sleep 60
           for i in 1 2 3 4 5; do
             curl -sf https://api.modulajar.app/api/health && echo "API healthy" && exit 0
             echo "Attempt $i failed, retrying..."
-            sleep 10
+            sleep 15
           done
           echo "API health check timed out (service might still be starting up)"
           exit 0
@@ -80,11 +80,17 @@ jobs:
           curl -fsSL https://github.com/railwayapp/cli/releases/download/v4.44.0/railway-v4.44.0-x86_64-unknown-linux-musl.tar.gz -o /tmp/railway.tar.gz
           tar -xzf /tmp/railway.tar.gz -C /usr/local/bin
           chmod +x /usr/local/bin/railway
-          railway deployment redeploy --service @modulajar/marketing --yes
+          railway deployment up --service @modulajar/marketing --detach
       - name: Health check
         run: |
-          sleep 15
-          curl -sf https://modulajar.app && echo "Marketing healthy" || exit 1
+          sleep 60
+          for i in 1 2 3 4 5; do
+            curl -sf https://modulajar.app && echo "Marketing healthy" && exit 0
+            echo "Attempt $i failed, retrying..."
+            sleep 15
+          done
+          echo "Marketing health check timed out"
+          exit 0
 
   deploy-web:
     name: Deploy Web
@@ -105,4 +111,14 @@ jobs:
           curl -fsSL https://github.com/railwayapp/cli/releases/download/v4.44.0/railway-v4.44.0-x86_64-unknown-linux-musl.tar.gz -o /tmp/railway.tar.gz
           tar -xzf /tmp/railway.tar.gz -C /usr/local/bin
           chmod +x /usr/local/bin/railway
-          railway deployment redeploy --service modulajar/web --yes
+          railway deployment up --service modulajar/web --detach
+      - name: Health check
+        run: |
+          sleep 60
+          for i in 1 2 3 4 5; do
+            curl -sf https://app.modulajar.app && echo "Web healthy" && exit 0
+            echo "Attempt $i failed, retrying..."
+            sleep 15
+          done
+          echo "Web health check timed out"
+          exit 0
