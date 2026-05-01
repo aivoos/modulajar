@@ -18,13 +18,13 @@ FROM monorepo-base AS marketing-build
 WORKDIR /app
 # node_modules from monorepo-base (hoisted, available at /app/node_modules)
 COPY --from=monorepo-base /app/node_modules ./node_modules
-RUN cd apps/marketing && pnpm exec next build
+RUN cd apps/marketing && bun run build
 
 # ── Stage 3: Build web ─────────────────────────────────────────────────
 FROM monorepo-base AS web-build
 WORKDIR /app
 COPY --from=monorepo-base /app/node_modules ./node_modules
-RUN cd apps/web && pnpm exec next build
+RUN cd apps/web && bun run build
 
 # ── Stage 4: Runtime (services run from pre-built .next dirs) ──────────
 FROM oven/bun:1-debian AS runtime
