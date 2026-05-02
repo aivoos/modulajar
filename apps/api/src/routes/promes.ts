@@ -2,7 +2,7 @@
 // Ref: modulajar-spec-v3.jsx — Sprint 2 S2-3 Promes (Program Semester)
 import { Elysia } from "elysia";
 import { createAdminClient } from "@modulajar/db";
-import { getOpenAIClient } from "@modulajar/agents";
+import { getOpenAIClient, CurriculumService } from "@modulajar/agents";
 import { z } from "zod";
 
 function getUserId(request: Request): string | null {
@@ -36,20 +36,6 @@ async function checkFeatureFlag(supabase: ReturnType<typeof createAdminClient>, 
     .eq("flag", flag)
     .single();
   return data?.value === true;
-}
-
-async function fetchCPLearningOutcomes(
-  supabase: ReturnType<typeof createAdminClient>,
-  subject: string,
-  phase: string
-) {
-  const { data, error } = await supabase
-    .from("learning_outcomes")
-    .select("*")
-    .eq("subject", subject)
-    .eq("phase", phase);
-  if (error) return null;
-  return data;
 }
 
 // Build the AI prompt for Promes generation
@@ -175,12 +161,17 @@ export const promesRoutes = new Elysia({ prefix: "promes" })
       return { error: "subscription_required", message: "PROMES memerlukan langganan Go atau Plus." };
     }
 
-    // Fetch CP data for this subject/phase
-    const cpData = await fetchCPLearningOutcomes(supabase, subject, phase);
-    if (!cpData || cpData.length === 0) {
+    // Fetch CP data for this subject/phase (uses CurriculumService 5min cache)
+    const rawCP = await CurriculumService.getCP(subject, phase);
+    if (!rawCP || rawCP.length === 0) {
       set.status = 400;
       return { error: "no_cp_data", message: `Data CP untuk ${subject} Fase ${phase} tidak ditemukan.` };
     }
+    const cpData = rawCP.map((r) => ({
+      elemen: r.elemen,
+      sub_elemen: r.sub_elemen ?? undefined,
+      deskripsi_cp: r.deskripsi,
+    }));
 
     // Fetch prota data if protaPlanId provided
     let protaData: Record<string, unknown> | undefined;

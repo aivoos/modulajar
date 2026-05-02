@@ -1,6 +1,6 @@
 // Activity Agent — Kegiatan pembelajaran dengan diferensiasi
 // Ref: modulajar-master-v3.jsx — Activity Agent
-import { AgentBase } from "./base";
+import { AgentBase, registerAgentPrompt } from "./base";
 import {
   ActivityAgentOutputSchema,
   type ActivityAgentOutput,
@@ -25,13 +25,15 @@ DIFERENSIASI (per gaya belajar):
 
 FORMAT OUTPUT: JSON. Jawab HANYA JSON.`;
 
+registerAgentPrompt("activity", SYSTEM);
+
 export class ActivityAgent extends AgentBase<{
   atp: import("./schemas").AtpAgentOutput;
   tp_list: import("./schemas").TpAgentOutput;
 }, typeof ActivityAgentOutputSchema> {
-  readonly name = "activity_agent";
+  readonly agentName = "activity";
   readonly description = "Mendesain kegiatan pembelajaran dengan diferensiasi gaya belajar";
-  readonly systemPrompt = SYSTEM;
+  protected readonly systemPrompt = SYSTEM;
   readonly schema = ActivityAgentOutputSchema;
 
   protected buildPrompt(

@@ -1,15 +1,12 @@
 // Prota Agent — Program Tahunan (Yearly Overview)
 // Ref: modulajar-spec-v3.jsx — Sprint 2 S2-3
-import { AgentBase } from "./base";
+import { AgentBase, registerAgentPrompt } from "./base";
 import {
   ProtaAgentOutputSchema,
   type ProtaAgentOutput,
   type ModuleGenerationContext,
   type CpAgentOutput,
 } from "./schemas";
-
-// Prota uses CP data to generate a yearly teaching program
-// Output: semester breakdown with TP allocations per week
 
 const SYSTEM = `Kamu adalah ahli desain kurikulum Indonesia. Spesialisasimu: menyusun Program Tahunan (PROTA) untuk Kurikulum Merdeka.
 
@@ -24,10 +21,12 @@ Prinsip:
 
 FORMAT OUTPUT: JSON. Jawab HANYA JSON.`;
 
+registerAgentPrompt("prota", SYSTEM);
+
 export class ProtaAgent extends AgentBase<CpAgentOutput, typeof ProtaAgentOutputSchema> {
-  readonly name = "prota_agent";
+  readonly agentName = "prota";
   readonly description = "Menyusun Program Tahunan (PROTA) dari Capaian Pembelajaran";
-  readonly systemPrompt = SYSTEM;
+  protected readonly systemPrompt = SYSTEM;
   readonly schema = ProtaAgentOutputSchema;
 
   protected buildPrompt(ctx: ModuleGenerationContext, input: CpAgentOutput): string {

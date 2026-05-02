@@ -13,3 +13,8 @@ export * from "./providers/openai";
 
 // Provide a non-abstract class export for external use
 export { AgentBase } from "./agents/base";
+
+// Infrastructure services
+export { CurriculumService } from "./lib/curriculum-service";
+export { PromptLoader } from "./lib/prompt-loader";
+export { DraftService, hashTopik } from "./lib/draft-service";

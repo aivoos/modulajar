@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { getOpenAIClient } from "../providers/openai";
 import type { ModuleGenerationContext } from "./schemas";
+import { PromptLoader } from "../lib/prompt-loader";
 
 // ── Model tier: all tiers use gpt-4o-mini
 // gpt-4o-mini cukup untuk modul ajar Kurikulum Merdeka (cukup straightforward)
@@ -102,15 +103,32 @@ class TierRateLimiter {
 
 export const rateLimiter = new TierRateLimiter();
 
+// Static prompt registry (set via AGENT_NAME in subclasses)
+const AGENT_PROMPTS: Record<string, string> = {};
+
+/** Register a static fallback prompt for an agent. Call from subclass. */
+export function registerAgentPrompt(name: string, prompt: string): void {
+  AGENT_PROMPTS[name] = prompt;
+}
+
 export abstract class AgentBase<Input, Output extends z.ZodType> {
-  abstract readonly name: string;
+  /** Agent identifier — used to load prompt from DB via PromptLoader. */
+  abstract readonly agentName: string;
   abstract readonly description: string;
-  abstract readonly systemPrompt: string;
   abstract readonly schema: Output;
   /** Default model. Override per-plan in subclasses if needed. */
   protected readonly model: string = "gpt-4o-mini";
 
   protected abstract buildPrompt(ctx: ModuleGenerationContext, input: Input): string;
+
+  /**
+   * System prompt — loaded from DB via PromptLoader if available,
+   * falls back to static AGENT_PROMPTS registry.
+   * Override this getter to set static fallback only.
+   */
+  protected get systemPrompt(): string {
+    return AGENT_PROMPTS[this.agentName] ?? "";
+  }
 
   async run(
     ctx: ModuleGenerationContext,
@@ -122,6 +140,14 @@ export abstract class AgentBase<Input, Output extends z.ZodType> {
     try {
       const client = getOpenAIClient();
       const model = opts?.plan ? getModelForPlan(opts.plan) : this.model;
+
+      // Load system prompt: DB (PromptLoader) → static registry → agent's own getter
+      const [dbPrompt, staticPrompt] = await Promise.all([
+        PromptLoader.getPrompt(this.agentName).catch(() => ""),
+        Promise.resolve(this.systemPrompt),
+      ]);
+      const effectivePrompt = dbPrompt || staticPrompt;
+
       const prompt = this.buildPrompt(ctx, input);
       const maxTokens = 4096;
       const temperature = opts?.temperature ?? 0.7;
@@ -131,7 +157,7 @@ export abstract class AgentBase<Input, Output extends z.ZodType> {
         max_tokens: maxTokens,
         temperature,
         messages: [
-          { role: "system", content: this.systemPrompt },
+          { role: "system", content: effectivePrompt },
           { role: "user", content: prompt },
         ],
         response_format: { type: "json_object" },
@@ -148,8 +174,8 @@ export abstract class AgentBase<Input, Output extends z.ZodType> {
         const json = JSON.parse(raw);
         parsed = this.schema.parse(json);
       } catch (e) {
-        console.error(`[${this.name}] Parse error:\nRaw: ${raw.slice(0, 300)}`);
-        throw new Error(`${this.name} failed to parse output: ${String(e)}`);
+        console.error(`[${this.agentName}] Parse error:\nRaw: ${raw.slice(0, 300)}`);
+        throw new Error(`${this.agentName} failed to parse output: ${String(e)}`);
       }
 
       return {

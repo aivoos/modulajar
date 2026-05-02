@@ -2,7 +2,7 @@
 // Ref: modulajar-spec-v3.jsx — Sprint 2 S2-3 Prota (Program Tahunan)
 import { Elysia } from "elysia";
 import { createAdminClient } from "@modulajar/db";
-import { getOpenAIClient } from "@modulajar/agents";
+import { getOpenAIClient, CurriculumService } from "@modulajar/agents";
 import { z } from "zod";
 
 function getUserId(request: Request): string | null {
@@ -36,21 +36,7 @@ async function checkFeatureFlag(supabase: ReturnType<typeof createAdminClient>, 
   return data?.value === true;
 }
 
-async function fetchCPLearningOutcomes(
-  supabase: ReturnType<typeof createAdminClient>,
-  subject: string,
-  phase: string
-) {
-  const { data, error } = await supabase
-    .from("learning_outcomes")
-    .select("*")
-    .eq("subject", subject)
-    .eq("phase", phase);
-  if (error) return null;
-  return data;
-}
-
-// Build the AI prompt for Prota generation
+    // Build the AI prompt for Prota generation
 function buildProtaPrompt(opts: {
   subject: string;
   phase: string;
@@ -169,12 +155,18 @@ export const protaRoutes = new Elysia({ prefix: "prota" })
       return { error: "subscription_required", message: "PROTA memerlukan langganan Go atau Plus." };
     }
 
-    // Fetch CP data for this subject/phase
-    const cpData = await fetchCPLearningOutcomes(supabase, subject, phase);
-    if (!cpData || cpData.length === 0) {
+    // Fetch CP data for this subject/phase (uses CurriculumService 5min cache)
+    const rawCP = await CurriculumService.getCP(subject, phase);
+    if (!rawCP || rawCP.length === 0) {
       set.status = 400;
       return { error: "no_cp_data", message: `Data CP untuk ${subject} Fase ${phase} tidak ditemukan.` };
     }
+    // Map to shape expected by dispatch and buildProtaPrompt
+    const cpData = rawCP.map((r) => ({
+      elemen: r.elemen,
+      sub_elemen: r.sub_elemen ?? undefined,
+      deskripsi_cp: r.deskripsi,
+    }));
 
     // Create agent job
     const { data: job, error: jobErr } = await supabase
@@ -319,6 +311,7 @@ interface ProtaGenerationInput {
   cpData: Array<{ elemen: string; sub_elemen?: string; deskripsi_cp: string }>;
 }
 
+// dispatchProtaGeneration reuses cpData from caller (already cached at route handler level)
 async function dispatchProtaGeneration(
   jobId: string,
   userId: string,

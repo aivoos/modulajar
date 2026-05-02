@@ -1,6 +1,6 @@
 // ATP Agent — Alur Tujuan Pembelajaran mingguan
 // Ref: modulajar-master-v3.jsx — ATP Agent
-import { AgentBase } from "./base";
+import { AgentBase, registerAgentPrompt } from "./base";
 import {
   AtpAgentOutputSchema,
   type AtpAgentOutput,
@@ -19,10 +19,12 @@ ATP = breakdown TP menjadi alur pembelajaran per minggu. Prinsip:
 
 FORMAT OUTPUT: JSON. Jawab HANYA JSON.`;
 
+registerAgentPrompt("atp", SYSTEM);
+
 export class AtpAgent extends AgentBase<TpAgentOutput, typeof AtpAgentOutputSchema> {
-  readonly name = "atp_agent";
+  readonly agentName = "atp";
   readonly description = "Menyusun Alur Tujuan Pembelajaran mingguan dari daftar TP";
-  readonly systemPrompt = SYSTEM;
+  protected readonly systemPrompt = SYSTEM;
   readonly schema = AtpAgentOutputSchema;
 
   protected buildPrompt(ctx: ModuleGenerationContext, input: TpAgentOutput): string {

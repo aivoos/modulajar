@@ -1,6 +1,6 @@
 // CP Agent — Capaian Pembelajaran from curriculum DB
 // Ref: modulajar-master-v3.jsx — CP Agent
-import { AgentBase } from "./base";
+import { AgentBase, registerAgentPrompt } from "./base";
 import {
   CpAgentOutputSchema,
   type CpAgentOutput,
@@ -18,10 +18,12 @@ KENAIAN:
 OUTPUT FORMAT: JSON dengan schema yang sudah ditentukan.
 Jawab HANYA JSON. Tidak ada teks lain di luar JSON.`;
 
+registerAgentPrompt("cp", SYSTEM);
+
 export class CpAgent extends AgentBase<void, typeof CpAgentOutputSchema> {
-  readonly name = "cp_agent";
+  readonly agentName = "cp";
   readonly description = "Membaca dan menerjemahkan Capaian Pembelajaran dari database kurikulum";
-  readonly systemPrompt = SYSTEM;
+  protected readonly systemPrompt = SYSTEM;
   readonly schema = CpAgentOutputSchema;
 
   protected buildPrompt(ctx: ModuleGenerationContext, _input: void): string {

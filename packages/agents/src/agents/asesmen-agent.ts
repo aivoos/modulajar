@@ -1,6 +1,6 @@
 // Asesmen Agent — Diagnostik + Formatif + Sumatif dengan instrumen dan rubrik
 // Ref: modulajar-master-v3.jsx — Asesmen Agent
-import { AgentBase } from "./base";
+import { AgentBase, registerAgentPrompt } from "./base";
 import {
   AsesmenAgentOutputSchema,
   type AsesmenAgentOutput,
@@ -32,13 +32,15 @@ Contoh: "Skor 4 =jawaban lengkap, tepat, dan sistematis; Skor 3 =jawaban lengkap
 
 FORMAT OUTPUT: JSON. Jawab HANYA JSON.`;
 
+registerAgentPrompt("asesmen", SYSTEM);
+
 export class AsesmenAgent extends AgentBase<{
   tp_list: import("./schemas").TpAgentOutput;
   activity_output: import("./schemas").ActivityAgentOutput;
 }, typeof AsesmenAgentOutputSchema> {
-  readonly name = "asesmen_agent";
+  readonly agentName = "asesmen";
   readonly description = "Membuat instrumen asesmen: diagnostik, formatif, dan sumatif";
-  readonly systemPrompt = SYSTEM;
+  protected readonly systemPrompt = SYSTEM;
   readonly schema = AsesmenAgentOutputSchema;
 
   protected buildPrompt(

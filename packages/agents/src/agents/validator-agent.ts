@@ -1,6 +1,6 @@
 // Validator Agent — Validasi modul lengkap vs template schema
 // Ref: modulajar-master-v3.jsx — Validator Agent
-import { AgentBase } from "./base";
+import { AgentBase, registerAgentPrompt } from "./base";
 import {
   ValidatorOutputSchema,
   type ValidatorOutput,
@@ -22,6 +22,8 @@ SEVERITY LEVELS:
 
 FORMAT OUTPUT: JSON. Jawab HANYA JSON.`;
 
+registerAgentPrompt("validator", SYSTEM);
+
 interface GeneratedModule {
   identitas: Record<string, unknown>;
   cp_list?: Array<{ elemen: string; sub_elemen?: string; deskripsi_cp: string }>;
@@ -37,9 +39,9 @@ interface GeneratedModule {
 }
 
 export class ValidatorAgent extends AgentBase<GeneratedModule, typeof ValidatorOutputSchema> {
-  readonly name = "validator_agent";
+  readonly agentName = "validator";
   readonly description = "Memvalidasi kelengkapan dan kualitas modul ajar";
-  readonly systemPrompt = SYSTEM;
+  protected readonly systemPrompt = SYSTEM;
   readonly schema = ValidatorOutputSchema;
 
   protected buildPrompt(ctx: ModuleGenerationContext, input: GeneratedModule): string {

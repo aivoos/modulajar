@@ -1,6 +1,6 @@
 // TP Agent — Tujuan Pembelajaran ABCD format
 // Ref: modulajar-master-v3.jsx — TP Agent + Bloom's Taxonomy
-import { AgentBase } from "./base";
+import { AgentBase, registerAgentPrompt } from "./base";
 import {
   TpAgentOutputSchema,
   type TpAgentOutput,
@@ -28,10 +28,12 @@ FORMAT ABCD:
 FORMAT OUTPUT: JSON array. SATU TP per elemen CP. Maksimal 12 TP per modul (lebih dari itu berarti modul terlalu luas).
 Jawab HANYA JSON.`;
 
+registerAgentPrompt("tp", SYSTEM);
+
 export class TpAgent extends AgentBase<CpAgentOutput, typeof TpAgentOutputSchema> {
-  readonly name = "tp_agent";
+  readonly agentName = "tp";
   readonly description = "Menulis Tujuan Pembelajaran format ABCD dari Capaian Pembelajaran";
-  readonly systemPrompt = SYSTEM;
+  protected readonly systemPrompt = SYSTEM;
   readonly schema = TpAgentOutputSchema;
 
   protected buildPrompt(ctx: ModuleGenerationContext, input: CpAgentOutput): string {
