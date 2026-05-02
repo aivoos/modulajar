@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic';
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase/client";
+import { PendingSyncBanner } from "@/hooks/usePWA";
 
 interface TeachingClass {
   id: string;
@@ -231,6 +232,8 @@ export default function JournalPage() {
           )}
         </div>
       </main>
+
+      <PendingSyncBanner />
     </div>
   );
 }

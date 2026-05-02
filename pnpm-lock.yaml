@@ -146,6 +146,9 @@ importers:
       '@vercel/og':
         specifier: ^0.11.1
         version: 0.11.1
+      dexie:
+        specifier: ^4.4.2
+        version: 4.4.2
       next:
         specifier: ^15.1.0
         version: 15.5.15(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
@@ -2934,6 +2937,9 @@ packages:
 
   devtools-protocol@0.0.1595872:
     resolution: {integrity: sha512-kRfgp8vWVjBu/fbYCiVFiOqsCk3CrMKEo3WbgGT2NXK2dG7vawWPBljixajVgGK9II8rDO9G0oD0zLt3I1daRg==}
+
+  dexie@4.4.2:
+    resolution: {integrity: sha512-zMtV8q79EFE5U8FKZvt0Y/77PCU/Hr/RDxv1EDeo228L+m/HTbeN2AjoQm674rhQCX8n3ljK87lajt7UQuZfvw==}
 
   dfa@1.2.0:
     resolution: {integrity: sha512-ED3jP8saaweFTjeGX8HQPjeC1YYyZs98jGNZx6IiBvxW7JG5v492kamAQB3m2wop07CvU/RQmzcKr6bgcC5D/Q==}
@@ -8114,6 +8120,8 @@ snapshots:
   detect-libc@2.1.2: {}
 
   devtools-protocol@0.0.1595872: {}
+
+  dexie@4.4.2: {}
 
   dfa@1.2.0: {}
 

@@ -1,11 +1,11 @@
 {
   "name": "Modulajar",
   "short_name": "Modulajar",
-  "description": "Buat modul ajar Kurikulum Merdeka dalam menit dengan AI",
+  "description": "LMS untuk Guru Indonesia — Buat modul ajar Kurikulum Merdeka dengan AI",
   "start_url": "/dashboard",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#4f46e5",
+  "background_color": "#0D1117",
+  "theme_color": "#4F46E5",
   "orientation": "portrait-primary",
   "scope": "/",
   "icons": [
@@ -34,10 +34,18 @@
       "description": "Buat modul ajar baru dengan AI"
     },
     {
-      "name": "Dashboard",
-      "short_name": "Dashboard",
-      "url": "/dashboard",
-      "description": "Lihat dashboard"
+      "name": "PROTA",
+      "short_name": "PROTA",
+      "url": "/prota",
+      "description": "Program Tahunan"
+    },
+    {
+      "name": "PROMES",
+      "short_name": "PROMES",
+      "url": "/promes",
+      "description": "Program Semester"
     }
-  ]
+  ],
+  "screenshots": [],
+  "related_applications": []
 }

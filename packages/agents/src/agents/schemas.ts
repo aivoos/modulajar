@@ -147,3 +147,53 @@ export const ValidatorOutputSchema = z.object({
   summary: z.string(),
 });
 export type ValidatorOutput = z.infer<typeof ValidatorOutputSchema>;
+
+// ── Prota Agent output ──────────────────────────────────────────────
+export const ProtaAgentOutputSchema = z.object({
+  title: z.string(),
+  tahun_ajaran: z.string(),
+  mapel: z.string(),
+  fase: z.string(),
+  kelas: z.string(),
+  ringkasan: z.string().optional(),
+  semester: z.array(z.object({
+    semester: z.number().int().positive(),
+    minggu_efektif: z.number().int().positive(),
+    alokasi_tp: z.array(z.object({
+      tp_kode: z.string(),
+      elemen: z.string(),
+      alokasi_minggu: z.array(z.number().int().positive()),
+      capaian_minggu: z.string(),
+    })),
+    ringkasan_semester: z.string(),
+  })),
+  catatan: z.string().optional(),
+});
+export type ProtaAgentOutput = z.infer<typeof ProtaAgentOutputSchema>;
+
+// ── Promes Agent output ──────────────────────────────────────────
+export const PromesAgentOutputSchema = z.object({
+  title: z.string(),
+  tahun_ajaran: z.string(),
+  semester: z.number().int().positive(),
+  mapel: z.string(),
+  fase: z.string(),
+  kelas: z.string(),
+  ringkasan: z.string().optional(),
+  minggu_efektif: z.number().int().positive(),
+  alur_mingguan: z.array(z.object({
+    minggu_ke: z.number().int().positive(),
+    tp_kodes: z.array(z.string()),
+    elemen: z.string(),
+    topik: z.string(),
+    kegiatan_inti: z.string(),
+    alokasi_jam: z.number().int().positive(),
+    capaian: z.string(),
+  })),
+  penilaian: z.object({
+    formatif: z.string(),
+    sumatif: z.string(),
+  }).optional(),
+  catatan: z.string().optional(),
+});
+export type PromesAgentOutput = z.infer<typeof PromesAgentOutputSchema>;

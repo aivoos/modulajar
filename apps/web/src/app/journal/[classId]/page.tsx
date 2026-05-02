@@ -5,6 +5,8 @@ import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase/client";
+import { saveJournalDraft, getUnsyncedJournalDrafts, isOnline } from "@/lib/offline";
+import { PendingSyncBanner } from "@/hooks/usePWA";
 
 interface Student {
   id: string;
@@ -70,6 +72,7 @@ export default function JournalDetailPage({
   const [activityClose, setActivityClose] = useState("");
   const [tpAchievement, setTpAchievement] = useState(80);
   const [notes, setNotes] = useState("");
+  const [pendingOfflineCount, setPendingOfflineCount] = useState(0);
 
   useEffect(() => {
     async function load() {
@@ -77,6 +80,14 @@ export default function JournalDetailPage({
       if (!user) {
         router.push("/login");
         return;
+      }
+
+      // Check offline drafts
+      try {
+        const unsynced = await getUnsyncedJournalDrafts(user.id);
+        setPendingOfflineCount(unsynced.filter(u => u.teaching_class_id === classId && u.date === date).length);
+      } catch {
+        // IndexedDB not available, ignore
       }
 
       // Fetch class + students
@@ -134,6 +145,22 @@ export default function JournalDetailPage({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         router.push("/login");
+        return;
+      }
+
+      // If offline, save to IndexedDB and skip server
+      if (!isOnline()) {
+        await saveJournalDraft({
+          teaching_class_id: classId,
+          user_id: user.id,
+          date,
+          topic,
+          activity_main: activityMain || null,
+          tp_achievement: tpAchievement,
+        });
+        setPendingOfflineCount(c => c + 1);
+        setSaving(false);
+        alert("📴 Jurnal disimpan offline — akan di-sync saat koneksi kembali.");
         return;
       }
 
@@ -211,8 +238,15 @@ export default function JournalDetailPage({
             <Link href="/journal" className="text-[#475569] hover:text-[#64748B]">←</Link>
             <span className="font-bold text-[#F1F5F9]">Jurnal</span>
           </div>
+          {pendingOfflineCount > 0 && (
+            <span className="text-xs bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded-full">
+              📴 {pendingOfflineCount} draft offline
+            </span>
+          )}
         </div>
       </header>
+
+      <PendingSyncBanner />
 
       <main className="max-w-4xl mx-auto px-6 py-8 space-y-6">
         {/* Class header */}

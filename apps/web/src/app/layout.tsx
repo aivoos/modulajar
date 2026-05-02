@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { AnalyticsProvider } from "@/providers/posthog";
 import { SentryPageFilter } from "@/providers/sentry";
+import { PWARegister } from "@/components/PWARegister";
 
 export const metadata: Metadata = {
   title: {
@@ -73,6 +74,7 @@ export default function RootLayout({
       <body>
         <AnalyticsProvider>
           <SentryPageFilter />
+          <PWARegister />
           {children}
         </AnalyticsProvider>
       </body>

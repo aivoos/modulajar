@@ -62,6 +62,8 @@ const { bankSoalRoutes } = await import("./routes/bank-soal");
 const { quizRoutes } = await import("./routes/quiz");
 const { topupRoutes } = await import("./routes/topup");
 const { dnaRoutes } = await import("./routes/dna");
+const { protaRoutes } = await import("./routes/prota");
+const { promesRoutes } = await import("./routes/promes");
 const { importRoutes } = await import("./routes/import-students");
 
 app
@@ -89,6 +91,8 @@ app
   .use(quizRoutes)
   .use(topupRoutes)
   .use(dnaRoutes)
+  .use(protaRoutes)
+  .use(promesRoutes)
   .use(importRoutes);
 
 const PORT = parseInt(process.env["PORT"] ?? "3000", 10);

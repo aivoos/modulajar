@@ -4,6 +4,8 @@ export const dynamic = 'force-dynamic';
 import { useState, useEffect, use } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase/client";
+import { saveGradeDraft, isOnline } from "@/lib/offline";
+import { PendingSyncBanner } from "@/hooks/usePWA";
 
 interface Student {
   id: string;
@@ -104,7 +106,7 @@ export default function GradesPage({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      // Upsert grades for each student × TP combination that has a score
+      // Collect entries
       const entries = [];
       for (const [studentId, tpScores] of Object.entries(scores)) {
         for (const [tpCode, score] of Object.entries(tpScores)) {
@@ -125,6 +127,25 @@ export default function GradesPage({
         }
       }
 
+      // If offline, save to IndexedDB and return
+      if (!isOnline() && entries.length > 0) {
+        for (const e of entries) {
+          await saveGradeDraft({
+            teaching_class_id: classId,
+            user_id: user.id,
+            student_id: e.student_id,
+            assessment_type: e.assessment_type,
+            tp_code: e.tp_code,
+            score: e.score,
+            notes: e.notes,
+          });
+        }
+        setSaving(false);
+        alert("📴 Nilai disimpan offline — akan di-sync saat koneksi kembali.");
+        return;
+      }
+
+      // Online: upsert directly
       if (entries.length > 0) {
         const { error } = await supabase.from("grade_entries").upsert(entries, {
           onConflict: "teaching_class_id,student_id,assessment_type,tp_code",
@@ -352,6 +373,8 @@ export default function GradesPage({
           {saving ? "Menyimpan..." : "Simpan Nilai"}
         </button>
       </main>
+
+      <PendingSyncBanner />
     </div>
   );
 }
